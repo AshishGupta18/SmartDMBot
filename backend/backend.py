@@ -1,13 +1,18 @@
 from flask import Flask, request, jsonify
 import os
+from dotenv import load_dotenv
 import numpy as np
 import faiss
 import PyPDF2
 import google.generativeai as genai
 import pickle
 
+# Load environment variables from .env file
+load_dotenv()
+
+
 # --- Configuration ---
-GEMINI_API_KEY = "AIzaSyCfdXeEy0aSeDRZzOb6-4Gyu6Hbq3FExLo"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 PDF_PATH = "workbook.pdf"
 EMBEDDING_MODEL_NAME = "models/embedding-001"
 GENERATIVE_MODEL_NAME = "gemini-2.5-flash"

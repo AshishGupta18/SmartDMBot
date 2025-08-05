@@ -3,3 +3,4 @@ google-generativeai
 faiss-cpu
 PyPDF2
 numpy
+
