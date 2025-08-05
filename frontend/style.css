@@ -75,7 +75,7 @@ body {
     border-radius: 20px 20px 0 0;
   }
   
-  .input-area input {
+  .input-area textarea {
     flex: 1;
     padding: 12px;
     border: none;
@@ -86,11 +86,19 @@ body {
     background: rgba(255, 255, 255, 0.2);
     color: #fff;
     backdrop-filter: blur(6px);
-  }
-  
-  .input-area input::placeholder {
+    resize: none;
+    min-height: 40px;
+    max-height: 200px;   /* Increased for longer messages */
+    line-height: 1.4;
+    overflow-y: hidden;  /* Removes scrollbar until necessary */
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    transition: all 0.2s ease;
+}
+
+.input-area textarea::placeholder {
     color: rgba(255, 255, 255, 0.6);
-  }
+}
   
   .input-area button {
     background: linear-gradient(135deg, #42a5f5, #478ed1);
@@ -110,4 +118,53 @@ body {
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  .copy-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  
+  .copy-text {
+    font-size: 0.8rem;
+    margin-right: 5px;
+    color: #ddd;
+  }
+  
+  .copy-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: #fff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: 6px;
+    transition: background 0.3s ease;
+  }
+  
+  .copy-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+  
+  /* Smooth "Copied!" tooltip */
+  .copied-tooltip {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background: #4CAF50;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    animation: fadeInOut 1.5s ease-in-out;
+  }
+  
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(-10px); }
+    20% { opacity: 1; transform: translateY(0); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-10px); }
   }
