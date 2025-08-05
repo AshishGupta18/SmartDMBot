@@ -1,0 +1,70 @@
+{
+  "object_type": "PROG",
+  "object_category": "R3TR",
+  "description": "PROG refers to ABAP Program objects created via transaction SE38. In SAP transport terminology, an R3TR-PROG entry represents the complete program including its sub-objects such as Includes (REPS), Text Elements (REPT), Screens (DYNP), GUI Status/Menu (CUAD), and Documentation (DOCU).",
+  "format_in_scope_sheet": "R3TR-PROG-ProgramName",
+  "can_be_included_in_toc_analysis": {
+    "NEW": {
+      "allowed": true,
+      "notes": "For NEW objects within scope (Scope = IN), the entire PROG object can be included in ToC import. After import, tool rules must be applied to all sub-objects using retrofit utilities."
+    },
+    "EXISTING": {
+      "allowed": false,
+      "notes": "For EXISTING objects, PROG entries cannot be directly included in ToC import. Retrofit must be performed using Tool Scope logic."
+    }
+  },
+  "sub_objects": [
+    "REPS",
+    "REPT",
+    "DYNP",
+    "CUAD",
+    "DOCU"
+  ],
+  "retrofit_scope_handling": {
+    "tool_scope": {
+      "description": "Sub-object type REPS (e.g., Includes like TOP, F01, I01, O01) is handled under Tool Scope. Tool Scope entries must be retrofitted using the results of parsed source, merged, and target files."
+    },
+    "service_scope": {
+      "description": "Sub-objects like REPT (Text elements), DYNP (Screens), CUAD (GUI Status/Menu), and DOCU (Documentation) are handled under Service Scope. These must be retrofitted if not already covered."
+    }
+  },
+  "retrofit_procedure": {
+    "new_object": {
+      "description": "If PROG is new to the target system, it can be imported via dashboard (online retrofit) or ToC import (offline retrofit).",
+      "notes": [
+        "If scope TR has NEW R3TR PROG, all sub-objects (REPT, REPS, DYNP, CUAD) are included in import.",
+        "If scope TR has only LIMU REPS (e.g., /SCL/RDLETRAR_DRIVER_SWTOP), only that include is imported.",
+        "Post-import, if Tool Scope changes exist, apply parsed/merged tool result on top."
+      ]
+    },
+    "existing_object": {
+      "description": "If PROG exists in the target, it must be retrofitted using tool results (source_parsed, merged, target files).",
+      "notes": [
+        "If scope TR has LIMU REPS, retrofit that sub-object only.",
+        "If scope TR has R3TR PROG, all sub-objects need to be retrofitted.",
+        "Use version comparison (SE03/E071/E070) to validate latest scope TR."
+      ]
+    }
+  },
+  "filtering_and_duplicate_handling": {
+    "example": "scope = IN, MAIN_OBJECT = '/SCL/RDLETRAR_DRIVER_SW'",
+    "steps": [
+      "Apply filter on scoping sheet using Scope = IN and MAIN_OBJECT = specific program name.",
+      "Remove duplicate entries by checking column 'Duplicate'.",
+      "Retain only the latest transport with 'Final' or blank status and discard older duplicates."
+    ]
+  },
+  "guidelines": {
+    "service_scope_check": "Ensure Service Scope sub-objects are already retrofitted. If not, handle them separately.",
+    "final_vs_blank": "When both FINAL and BLANK entries exist, use the latest transport request based on version history and mark the older one as 'Retrofit Done' or 'No Action'.",
+    "tool_usage": "Use tool-generated files (source_parsed, merged, target) along with version history to determine retrofitted code structure.",
+    "version_checking": "Use SE03 -> E071/E070 to check latest version of the transport object."
+  },
+  "rssyscomp_utility": {
+    "description": "To retrieve all sub-objects of R3TR-PROG entry, run report RSSYSCOMP with the program name.",
+    "output_usage": "Use PROGRAM_ID, OBJECT_TYPE, OBJ_NAME columns in output to verify all LIMU sub-objects needing retrofit.",
+    "scoping_sheet_application": "Filter the scoping sheet with same MAIN_OBJECT and remove duplicates before proceeding."
+  },
+  "priority_note": "Always begin retrofit for R3TR-PROG entries before working on individual LIMUs to ensure dependent objects with different scope TRs are also covered.",
+  "online_vs_offline": "Handling difference for Online and Offline retrofit of PROG objects is pending (to be documented separately)."
+}

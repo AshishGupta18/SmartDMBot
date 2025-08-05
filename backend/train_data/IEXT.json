@@ -1,0 +1,181 @@
+{
+  "object": "IDoc Extension",
+  "technical_name": ["IEXT", "IDOC Extension"],
+  "description": "IDoc Extension is a customization of an existing IDoc Basic Type. It allows you to add custom segments or fields without modifying the standard IDoc type, enabling specific business needs to be met without losing standard compatibility.",
+  "tcode": ["WE30", "WE31", "WE82", "WE20", "SE16"],
+  "tcode_details": [
+    {
+      "code": "WE30",
+      "purpose": "Used to create and edit IDoc types including Extensions by copying standard Basic Types and adding custom segments."
+    },
+    {
+      "code": "WE31",
+      "purpose": "Used to create and edit custom segments to be used in IDoc Extensions."
+    },
+    {
+      "code": "WE82",
+      "purpose": "Used to maintain IDoc type and message type assignment for Extensions."
+    },
+    {
+      "code": "WE20",
+      "purpose": "Used to configure partner profiles and processing rules for IDocs."
+    },
+    {
+      "code": "SE16",
+      "purpose": "Used to view/edit tables like EDBAS, EDISDEF, EDIMSG, and segment control tables."
+    }
+  ],
+  "used_in": ["Custom Integration", "Partner-specific Enhancements", "ALE Extensions", "Middleware Customization"],
+  "structure": {
+    "tabs": [
+      {
+        "name": "Extension Name",
+        "description": "Typically follows a naming convention like ZEXT_<BasicType>. Used to extend standard Basic Types."
+      },
+      {
+        "name": "Custom Segment",
+        "description": "User-defined segment created to hold additional fields not present in the standard IDoc."
+      },
+      {
+        "name": "Hierarchy Placement",
+        "description": "Defines where the custom segment is inserted in the IDoc structure — typically as a child or at the same level of existing segments."
+      }
+    ]
+  },
+  "how_it_works": "IDoc Extensions work by copying a standard Basic Type and adding custom segments to the structure. These custom segments are then used to carry additional business data required by specific business processes or partners. Extensions require correct partner profile and message type assignments.",
+  "example": {
+    "idoc": "ZEXT_WBBDLD04",
+    "segment": {
+      "name": "ZSEG_BOOKDATA",
+      "fields": [
+        { "name": "BOOK_ID", "type": "CHAR", "length": 10 },
+        { "name": "TITLE", "type": "CHAR", "length": 40 },
+        { "name": "AUTHOR", "type": "CHAR", "length": 30 },
+        { "name": "PUBLISH_DATE", "type": "DATS", "length": 8 }
+      ]
+    },
+    "used_for": "To transfer book metadata from external publishing system into SAP.",
+    "status": "Retrofit Done – Created Extension and segment in target system."
+  },
+  "retrofit": {
+    "overview": "IDoc Extensions are not imported via ToC due to TABU dependency. Manual creation of extension and segments is necessary.",
+    "cases": [
+      {
+        "name": "Case 1 - New Extension",
+        "steps": [
+          "Go to WE30 and enter extension name.",
+          "Select 'Extension' radio button.",
+          "Choose existing Basic Type to extend (e.g., WBBDLD04).",
+          "Create new segment using WE31 (e.g., ZSEG_BOOKDATA).",
+          "Add fields exactly matching source system (name, type, length).",
+          "Insert the segment in proper hierarchy position.",
+          "Do not release segment if it's not released in source system.",
+          "Maintain IDoc Extension mapping in WE82 and check partner config in WE20."
+        ]
+      },
+      {
+        "name": "Case 2 - Existing Extension",
+        "steps": [
+          "Use WE30 to find the extension and click 'Change'.",
+          "If editing is restricted, check release status of custom segments.",
+          "Use debug method via EDISDEF table to cancel segment release if necessary.",
+          "Make structural changes and re-save.",
+          "Verify message type assignment in WE82 and consistency in WE20."
+        ]
+      }
+    ],
+    "debug_workaround": {
+      "description": "Use this to unlock segments if release cancellation fails via UI.",
+      "steps": [
+        "Open EDISDEF table in SE16 and enter segment name.",
+        "Activate debugging mode with /h.",
+        "Change CODE from SHOW to EDIT and press F8.",
+        "Remove 'X' from release flag field and save.",
+        "Segment will now be editable in WE31."
+      ]
+    },
+    "comparison_details": {
+      "object_type": "IDoc Extension",
+      "tcode": "WE30",
+      "table": "EDBAS"
+    },
+    "status_types": [
+      "Retrofit Done – Created Extension and custom segment",
+      "No Action – Identical to source",
+      "Pending – Waiting for scoping confirmation"
+    ]
+  },
+  "structured_steps": {
+    "create_new_extension": [
+      "Go to WE30",
+      "Select 'Extension', enter new name",
+      "Choose Basic Type to extend (e.g., WBBDLD04)",
+      "Add custom segment to structure hierarchy",
+      "Save without releasing if not released in source",
+      "Assign to message type in WE82",
+      "Verify partner profile in WE20"
+    ],
+    "create_custom_segment": [
+      "Go to WE31",
+      "Enter segment name and click Create",
+      "Add required fields (name, type, length)",
+      "Save without releasing if source not released"
+    ]
+  },
+  "tables": [
+    {
+      "name": "EDBAS",
+      "description": "Holds metadata for IDoc types and extensions"
+    },
+    {
+      "name": "EDISDEF",
+      "description": "Stores segment metadata and release information"
+    },
+    {
+      "name": "EDISEG",
+      "description": "Contains field-level definitions of IDoc segments"
+    },
+    {
+      "name": "EDIMSG",
+      "description": "Holds IDoc type and message type assignment"
+    }
+  ],
+  "errors_and_troubleshooting": [
+    {
+      "error": "Segment not editable",
+      "solution": "Use debug workaround in SE16 for EDISDEF to unlock"
+    },
+    {
+      "error": "Message type not triggering extension",
+      "solution": "Check WE82 mapping and partner profile config in WE20"
+    },
+    {
+      "error": "Field mismatch in segment",
+      "solution": "Verify segment structure matches source (field order, types)"
+    }
+  ],
+  "best_practices": [
+    "Use naming conventions like ZEXT_<BASIC_TYPE> for extensions.",
+    "Maintain segment structure identical to source system.",
+    "Avoid releasing segment if not released in source to prevent sync issues.",
+    "Ensure correct hierarchy and message type mapping.",
+    "Test extension end-to-end in a sandbox or test system before moving to target."
+  ],
+  "things_to_remember": [
+    "IDoc Extensions must be manually recreated in the target system.",
+    "Custom segments must match exactly with the source.",
+    "WE82 mapping is critical to activate the extension in processing.",
+    "ToC is not preferred due to table dependency (TABU)."
+  ],
+  "common_questions": [
+    "How to create a new IDoc Extension in the target system?",
+    "What is the use of WE82 in IDoc Extensions?",
+    "How do I link an Extension to a Message Type?",
+    "What to do if my segment is released but needs editing?",
+    "Can I use ToC for IDoc Extensions?",
+    "Why is my custom segment not showing in runtime?",
+    "What's the difference between Basic Type and Extension?",
+    "Do I always need to release a custom segment?",
+    "How to debug if the IDoc Extension is not picked up during processing?"
+  ]
+}

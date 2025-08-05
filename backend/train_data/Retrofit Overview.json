@@ -1,0 +1,154 @@
+{
+  "title": "SmartShift Retrofit - Full Overview for Dual Maintenance",
+  "definition": "SmartShift Retrofit is a specialized dual maintenance solution designed to merge development changes from one SAP system to another parallel system, such as between ECC and S/4HANA environments. It ensures consistency between parallel landscapes during project cutovers, upgrades, or parallel tracks.",
+  "purpose": "To prevent missing changes or inconsistencies between systems by retrofitting (copying and merging) relevant changes made in one system (usually source) into another system (usually target).",
+  "who_uses_it": [
+    "ABAP Developers",
+    "SAP Basis Administrators",
+    "SmartShift Retrofit Teams",
+    "Release/Transport Coordinators"
+  ],
+  "when_to_use": [
+    "During cutovers or go-lives",
+    "During S/4HANA migrations",
+    "When two SAP environments are developed in parallel",
+    "When changes are made in lower systems that need to be replicated in higher or parallel systems"
+  ],
+  "types_of_retrofit": [
+    {
+      "type": "Offline Retrofit",
+      "description": "This process is done outside the SAP GUI using a tool like Meld. The code is extracted as XML and compared using a 3-way merge approach. It requires manual work from the developer to handle the merging and apply changes to the target.",
+      "tools_used": [
+        "XML Extractor Utility",
+        "SmartShift Tool Parser",
+        "Meld (3-way comparison tool)"
+      ]
+    },
+    {
+      "type": "Online Retrofit",
+      "description": "This process happens directly in the SmartShift WebUI dashboard (/smash/rfit). It provides a browser-based interface similar to Meld but integrated with SAP. Developers can perform code comparisons and directly push changes to the target system.",
+      "tools_used": [
+        "SmartShift WebUI (/smash/rfit)",
+        "SAP Transport System"
+      ]
+    }
+  ],
+  "scoping": {
+    "service_scope_objects": {
+      "definition": "Service Scope refers to SAP objects that are typically non-code-based and not handled using automated tools. These objects have simpler structures and are often maintained manually. Examples include data dictionary entries, text elements, and forms.",
+      "key_characteristics": [
+        "Do not contain ABAP logic",
+        "Often have version history",
+        "Minimal or no automation rules applicable",
+        "Handled manually or via SE03 and version comparison"
+      ],
+      "common_object_types": {
+        "DDIC_Objects": ["TABL (Table Definitions)", "TABD (Table Delivery Classes)", "VIEW (Database Views)", "DTEL (Data Elements)", "TTYP (Table Types)", "DOMA (Domains)"],
+        "Text_Objects": ["DOCU (Documentation)", "TEXT (Standard Texts)", "REPT (Report Texts)", "MSAG/MESS (Message Classes)"],
+        "Generated_Objects": ["IWPR (OData Projects)", "DYNP (Screen Definitions)"],
+        "Form_Objects": ["SSFO (Smart Styles)", "FORM (SAPscript)", "SFPI (Smartforms Includes)", "SFPF (Smartforms Form Definitions)"]
+      },
+      "versioning_guidelines": {
+        "most_have_versions": "The majority of these objects have versioning support. You can compare versions to identify what changed.",
+        "some_have_no_versions": "Objects like Smartforms, SAPscripts, and some text objects do not have versions. These require Safe-to-Import analysis via SE03."
+      },
+      "comparison_methods": [
+        "Use SE03 for Safe-to-Import checks",
+        "Use individual TCodes with 'Fetch Remote Versions' to compare manually",
+        "Use RSSYSCOMP to perform bulk version comparison between target and source (via RFC)"
+      ],
+      "limitations": [
+        "RSSYSCOMP only compares Active versions (source ↔ target)",
+        "Not all object types are supported in RSSYSCOMP (e.g., DOCU, MESS, FORM, TEXT)",
+        "Standard SAP objects (e.g., field lengths of standard fields) should not be modified"
+      ],
+      "example_warning": "MATNR (Material Number) has different lengths in ECC (18 chars) vs S/4HANA (40 chars). Such differences must be ignored during retrofit unless they are part of custom development."
+    },
+    "tool_scope_objects": {
+      "definition": "Tool Scope refers to repository objects that include executable ABAP code. These are analyzable, parsable, and updatable using SmartShift tools, including automated retrofit logic and comparison techniques.",
+      "object_types": ["ABAP Programs (REPS/PROG)", "Function Groups (FUGR)", "Function Modules (FUNC)", "Global Classes and Methods (CLAS)"],
+      "offline_process_steps": [
+        "Step 1: Extract system data as XML using the extractor utility",
+        "Step 2: Tool parses XML and generates 3 folders: source_parsed, merged, and target",
+        "Step 3: Use Meld for 3-way comparison (source_parsed vs merged vs target)",
+        "Step 4: Developer modifies the merged section and applies it to the target system manually"
+      ],
+      "online_process_steps": [
+        "Step 1: Access the SmartShift WebUI using /smash/rfit",
+        "Step 2: Select the object for retrofit",
+        "Step 3: View the 3-way comparison in the WebUI",
+        "Step 4: Apply changes and click 'Retrofit Done' to push to the target system"
+      ]
+    }
+  },
+  "merge_cases": [
+    {
+      "case": "Automerge",
+      "description": "The tool automatically merges source and target code with no manual action required. Ideal for simple or non-conflicting changes."
+    },
+    {
+      "case": "Conflict",
+      "description": "Tool detects differences in both source and target. Developer must manually analyze and decide which code to keep or combine."
+    },
+    {
+      "case": "Unchanged/Identical",
+      "description": "Source and target code are exactly the same. No action is needed. Tool marks these objects as 'No Action Required'."
+    }
+  ],
+  "post_retrofit_remediation": {
+    "purpose": "To ensure code quality and system stability after merging is complete.",
+    "required_checks": [
+      {
+        "type": "UC (Unicode Check)",
+        "description": "Checks if code is Unicode-compatible and free from character encoding issues."
+      },
+      {
+        "type": "EPC (Extended Program Check)",
+        "description": "Identifies ABAP syntax, performance, and runtime issues."
+      },
+      {
+        "type": "HCC (HANA Code Check)",
+        "description": "Checks if the code is optimized and compliant with SAP HANA database standards."
+      },
+      {
+        "type": "S4 (S/4HANA Readiness Check)",
+        "description": "Ensures that the code is compatible with S/4HANA and does not use obsolete or deprecated objects."
+      }
+    ],
+    "completion_criteria": "An object is considered fully retrofitted only when both the merging and remediation checks are successfully completed."
+  },
+  "chatbot_answers": [
+    {
+      "question": "What is SmartShift Retrofit?",
+      "answer": "SmartShift Retrofit is a solution that helps copy and merge development changes between parallel SAP environments, like from ECC to S/4. It supports both offline (using Meld) and online (using WebUI) modes."
+    },
+    {
+      "question": "What are service scope objects?",
+      "answer": "Service scope objects are non-code SAP objects like tables, texts, forms, and messages. These are usually maintained manually and are compared using SE03, RSSYSCOMP, or individual TCodes."
+    },
+    {
+      "question": "What are tool scope objects?",
+      "answer": "Tool scope objects are code-based SAP objects such as programs, classes, and function modules. These are retrofitted using tools like Meld (offline) or WebUI (online) with 3-way comparisons."
+    },
+    {
+      "question": "What is offline retrofit?",
+      "answer": "Offline retrofit involves extracting code as XML, parsing it into folders, and using Meld to perform 3-way comparisons between source, merged, and target code. The developer manually applies the merged code to the target."
+    },
+    {
+      "question": "What is online retrofit?",
+      "answer": "Online retrofit is done through the WebUI (/smash/rfit). It allows developers to compare and merge code in-browser and apply the merged result directly to the target system."
+    },
+    {
+      "question": "What does 'automerge' mean in retrofit?",
+      "answer": "Automerge means the system could merge the code from source and target automatically without conflicts. No manual work is needed."
+    },
+    {
+      "question": "What is a 'conflict case' in retrofit?",
+      "answer": "A conflict case occurs when both the source and target systems have different changes in the same code area. The developer must manually resolve the conflict and merge the correct logic."
+    },
+    {
+      "question": "When is retrofit considered complete?",
+      "answer": "Retrofit is considered complete only after both the merging process is done and manual remediation checks (UC, EPC, HCC, S4) have passed successfully."
+    }
+  ]
+}
