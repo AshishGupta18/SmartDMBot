@@ -1,13 +1,17 @@
-# Ignore Python cache
+# Python
 __pycache__/
 *.pyc
-
-# Ignore Node modules
-frontend/node_modules/
-
-# Ignore cache folder
-backend/cache/
-
-# Ignore environment
 venv/
 .env
+backend/cache/
+
+# Node.js
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
+
+# Electron build
+*.asar
