@@ -1,5 +1,5 @@
 {
-  "object_type": "DOMA/DOMD",
+  "object type": "DOMA/DOMD",
   "description": {
     "basic": "DOMA and DOMD are SAP Data Dictionary objects related to domains. They define consistent technical attributes (like data type, length, allowed values) for table fields across the system.",
     "detailed": {
@@ -28,7 +28,7 @@
     }
   },
   "tcode": "SE11",
-  "tools_used": [
+  "tool_used": [
     "SE11 – View, edit, and activate domains (DOMA).",
     "SE03 – Display/change transport requests and object entries.",
     "RSSYSCOMP – Compare objects between systems for retrofit validation."
@@ -46,7 +46,7 @@
       "Step 8: Run the version comparison again to confirm both systems are now in sync."
     ]
   },
-  "comparison_notes": {
+  "comparison notes": {
     "manual": "Manual comparison is done in SE11 by visually comparing domain properties between source and target.",
     "automated": "Using RSSYSCOMP allows bulk comparison of up to 8 objects. This is more efficient and helps reduce human error.",
     "tip": "Always double-check value ranges, especially if they are interval-based or include special characters."

@@ -14,8 +14,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 # --- Configuration ---
 EMBEDDING_MODEL_NAME = "models/embedding-001"
 GENERATIVE_MODEL_NAME = "gemini-2.5-flash"
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 100
+CHUNK_SIZE = 1500
+CHUNK_OVERLAP = 200
 TOP_K = 5
 DISTANCE_THRESHOLD = 0.70
 CACHE_DIR = "cache"
@@ -25,44 +25,92 @@ VECTORSTORE_CACHE_PATH = os.path.join(CACHE_DIR, "json_vectorstore.faiss")
 
 app = Flask(__name__)
 
-# --- JSON Transform Function ---
+# --- Transform JSON to Text (optimized for Gemini) ---
+def transform_idoc_json_to_text(json_data, filename=None):
+    lines = []
 
-def transform_idoc_json_to_text(json_data):
-    title = json_data.get("document_title", "Untitled Document")
-    text_output = [f"Title: {title}\n"]
+    if filename:
+        base_title = os.path.splitext(filename)[0].replace("_", " ").strip()
+        lines.append(f"--- Source: {base_title} ---")
+        lines.append(f"{base_title} Retrofit Guide\n")
 
-    pages = json_data.get("pages", [])
-    for page in pages:
-        page_num = page.get("page_number", "Unknown Page")
-        text_output.append(f"\n--- Page {page_num} ---")
+    if "object type" in json_data:
+        lines.append(f"Object Type: {json_data['object type']}")
+        lines.append("")
 
-        sections = page.get("sections", [])
-        for section in sections:
-            section_title = section.get("section_title", "Untitled Section")
-            text_output.append(f"\nSection: {section_title}")
+    if "description" in json_data:
+        desc = json_data["description"]
+        lines.append("Description:")
+        if isinstance(desc, dict):
+            for k, v in desc.items():
+                if isinstance(v, dict):
+                    lines.append(f"  {k.capitalize()}:")
+                    for subk, subv in v.items():
+                        lines.append(f"    {subk}: {subv}")
+                else:
+                    lines.append(f"  {k.capitalize()}: {v}")
+        else:
+            lines.append(f"  {desc}")
+        lines.append("")
 
-            content = section.get("content", "")
-            if isinstance(content, list):
-                for item in content:
-                    text_output.append(f"- {item}")
-            elif isinstance(content, str):
-                text_output.append(content)
+    if "tcode" in json_data:
+        lines.append(f"TCode: {json_data['tcode']}")
+        lines.append("")
 
-            subsections = section.get("subsections", [])
-            for sub in subsections:
-                sub_title = sub.get("title", "Subsection")
-                text_output.append(f"  ➤ {sub_title}")
-                sub_content = sub.get("content", "")
-                if isinstance(sub_content, list):
-                    for item in sub_content:
-                        text_output.append(f"    - {item}")
-                elif isinstance(sub_content, str):
-                    text_output.append(f"    {sub_content}")
+    if "tool_used" in json_data:
+        lines.append("Tools Used:")
+        for tool in json_data["tool_used"]:
+            lines.append(f"- {tool}")
+        lines.append("")
 
-    return "\n".join(text_output)
+    if "retrofit_process" in json_data:
+        lines.append("Retrofit Process:")
+        if isinstance(json_data["retrofit_process"], dict):
+            for k, v in json_data["retrofit_process"].items():
+                lines.append(f"  {k}: {v}")
+        else:
+            lines.append(f"  {json_data['retrofit_process']}")
+        lines.append("")
 
-# --- Updated JSON Loader Function ---
+    if "comparison notes" in json_data:
+        lines.append("Comparison Notes:")
+        if isinstance(json_data["comparison notes"], dict):
+            for k, v in json_data["comparison notes"].items():
+                lines.append(f"  {k}: {v}")
+        else:
+            lines.append(f"  {json_data['comparison notes']}")
+        lines.append("")
 
+    if "common_errors" in json_data:
+        lines.append("Common Errors:")
+        for err in json_data["common_errors"]:
+            lines.append(f"- {err}")
+        lines.append("")
+
+    if "best_practices" in json_data:
+        lines.append("Best Practices:")
+        for practice in json_data["best_practices"]:
+            lines.append(f"- {practice}")
+        lines.append("")
+
+    if "chatbot_responses" in json_data:
+        lines.append("Chatbot Responses:")
+        for k, v in json_data["chatbot_responses"].items():
+            lines.append(f"{k}:")
+            if isinstance(v, dict):
+                for subk, subv in v.items():
+                    if isinstance(subv, list):
+                        for item in subv:
+                            lines.append(f"  - {item}")
+                    else:
+                        lines.append(f"  {subk}: {subv}")
+            else:
+                lines.append(f"  {v}")
+        lines.append("")
+
+    return "\n".join(lines)
+
+# --- Load and transform all JSON files into text ---
 def load_text_from_json_folder(folder_path):
     all_text = ""
     for filename in os.listdir(folder_path):
@@ -71,7 +119,7 @@ def load_text_from_json_folder(folder_path):
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                    formatted_text = transform_idoc_json_to_text(data)
+                    formatted_text = transform_idoc_json_to_text(data, filename)
                     all_text += formatted_text + "\n\n"
             except json.JSONDecodeError as e:
                 print(f"❌ JSON error in file: {filename} → {e}")
@@ -79,8 +127,7 @@ def load_text_from_json_folder(folder_path):
                 print(f"⚠️ Unexpected error in file: {filename} → {e}")
     return all_text
 
-# --- Chunking Function ---
-
+# --- Split text into overlapping chunks ---
 def get_text_chunks(text):
     chunks = []
     start = 0
@@ -90,8 +137,7 @@ def get_text_chunks(text):
         start += CHUNK_SIZE - CHUNK_OVERLAP
     return chunks
 
-# --- Setup Embeddings & FAISS Vectorstore ---
-
+# --- Prepare vectorstore and cache ---
 def setup_chatbot():
     os.makedirs(CACHE_DIR, exist_ok=True)
     genai.configure(api_key=GEMINI_API_KEY)
@@ -104,7 +150,14 @@ def setup_chatbot():
 
     raw_text = load_text_from_json_folder(TRAIN_DATA_DIR)
     text_chunks = get_text_chunks(raw_text)
-    embeddings = [genai.embed_content(model=EMBEDDING_MODEL_NAME, content=chunk, task_type="retrieval_document")['embedding'] for chunk in text_chunks]
+
+    embeddings = [
+        genai.embed_content(
+            model=EMBEDDING_MODEL_NAME,
+            content=chunk,
+            task_type="retrieval_document"
+        )['embedding'] for chunk in text_chunks
+    ]
     embeddings_np = np.array(embeddings, dtype='float32')
 
     dimension = embeddings_np.shape[1]
@@ -115,12 +168,14 @@ def setup_chatbot():
         pickle.dump(text_chunks, f)
     faiss.write_index(index, VECTORSTORE_CACHE_PATH)
 
+    for i, chunk in enumerate(text_chunks[:5]):
+        print(f"Chunk {i} preview:\n{chunk[:300]}\n---\n")
+
     return index, text_chunks
 
 vectorstore, text_chunks = setup_chatbot()
 
-# --- Gemini Prompt Functions ---
-
+# --- Prompt Construction ---
 def get_contextual_answer(query, context):
     prompt = f"""You are a helpful assistant.
 Answer based only on this context:
@@ -140,13 +195,16 @@ def get_general_answer(query):
     return response.text
 
 # --- API Endpoint ---
-
 @app.route('/ask', methods=['POST'])
 def ask_question():
     data = request.get_json()
     query = data.get("question", "")
 
-    query_embedding = genai.embed_content(model=EMBEDDING_MODEL_NAME, content=query, task_type="retrieval_query")['embedding']
+    query_embedding = genai.embed_content(
+        model=EMBEDDING_MODEL_NAME,
+        content=query,
+        task_type="retrieval_query"
+    )['embedding']
     query_embedding = np.array([query_embedding], dtype='float32')
 
     distances, indices = vectorstore.search(query_embedding, k=TOP_K)
@@ -160,11 +218,25 @@ def ask_question():
         context = "\n---\n".join(retrieved_chunks)
         source = "📚 *Answer based on your training data (train_data)*"
         answer = get_contextual_answer(query, context)
+        # ✅ Post-process: reformat the output using Gemini again
+        reformat_prompt = f"""
+                    Format the following answer into a structured and readable format:
+        - Use bullet points or numbered steps
+        - Use bold for headers if needed
+        - Maintain spacing for readability
+        Answer:
+        {answer}
+        """
+        structured_response = get_general_answer(reformat_prompt)
+        answer = structured_response
 
     final_answer = f"{source}\n\n{answer}"
+
+    print(jsonify(final_answer))
     return jsonify({"answer": final_answer})
 
-# --- Run the App ---
 
+
+# --- Run App ---
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(port=5000, debug=True)

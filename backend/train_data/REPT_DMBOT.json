@@ -1,0 +1,145 @@
+{
+  "object type": "REPT",
+  "description": "REPT - Report Text/Text Elements. These are text elements associated with programs, function groups, or classes. They include Text Symbols, Selection Texts, and List Headings. REPT is maintained in original and (optionally) translated languages. For MPC and DPC classes, REPT should never be manually fixed.",
+  "tcode": ["SE38"],
+  "tool_used": ["SE38", "RSSYSCOMP", "Translation Mode (SE38 > Goto > Translations)"],
+  "retrofit_process": {
+    "scope_considerations": {
+      "format_in_scoping_sheet": "LIMU-REPT-ObjectName",
+      "safe_to_import": {
+        "new_in_scope": "Yes",
+        "existing_in_scope": "Not Yet - Under discussion. Currently must be fixed manually."
+      },
+      "translations": {
+        "primary_language": "Original language of the object",
+        "secondary_language": "Commonly EN or DE. Check with SPOC."
+      },
+      "notes": [
+        "REPT should be maintained first in original language, then in secondary language.",
+        "Never fix REPT for MPC and DPC class manually.",
+        "If a LANG entry exists (LANG-REPT-ObjectName), it can be considered for Safe to Import after analysis.",
+        "Always verify which system has the latest text changes before making updates.",
+        "Ensure Translation mode saves changes correctly before activating the object."
+      ]
+    },
+    "procedure": [
+      {
+        "step": 1,
+        "title": "Identify Original and Secondary Languages",
+        "details": [
+          "Login to the system (source and target) in any language.",
+          "Open the text element (SE38 > Text elements radio button, or GoTo > Text elements).",
+          "Check for messages indicating original language (e.g., 'Untranslated text in XX').",
+          "If no message, you are already in original language.",
+          "Determine primary and secondary languages based on client standards."
+        ]
+      },
+      {
+        "step": 2,
+        "title": "Login in Original Language - Compare and Retrofit",
+        "details": [
+          "Log in to the target system in the original language.",
+          "Fetch remote version via RFC connection to the source system.",
+          "Compare Scope TR with Target Active version.",
+          "Check all 3 tabs: Text Symbols, Selection Text, List Heading.",
+          "Scenarios:",
+          "No Action – Identical in original language.",
+          "No Action – Target has latest change.",
+          "Retrofit Done – Added Scope TR changes.",
+          "Retrofit Done – Added Scope TR changes, retaining customer changes."
+        ],
+        "notes": [
+          "If EDIT is disabled, switch off Modification Assistant."
+        ]
+      },
+      {
+        "step": 3,
+        "title": "Login in Secondary Language - Compare and Retrofit",
+        "details": [
+          "Log in to the target system in the secondary language.",
+          "Fetch remote version and compare.",
+          "Identify whether differences are from Scope TR (source) or target customer changes.",
+          "If possible, directly edit in secondary language and save.",
+          "If editing directly is restricted, enter Translation mode (GoTo > Translations, specify DE to EN or vice versa).",
+          "Maintain translations, save, return to REPT screen, and activate object.",
+          "Re-validate by re-comparing."
+        ],
+        "scenarios": [
+          "No Action – Identical in translation.",
+          "No Action – Target has latest change.",
+          "Retrofit Done – Added Scope TR changes.",
+          "Retrofit Done – Added Scope TR changes, retaining target changes."
+        ]
+      },
+      {
+        "step": 4,
+        "title": "Update Status and Comments in Scoping Sheet",
+        "details": [
+          "Determine final combined status:",
+          "If retrofit was done in any language: Status = 'Retrofit Done'.",
+          "If no changes in any language: Status = 'No Action'.",
+          "Example Comments:",
+          "Retrofit Done – Added scope TR changes to target in original language DE and translations maintained in EN.",
+          "No Action – Identical in source and target in both original DE and EN translation."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "object": "LIMU-REPT-Y03CPO_SICHT_DURCHSATZ",
+        "scope_tr": "I02K9P7987",
+        "source_system": "Q02",
+        "target_system": "I22",
+        "retrofit_target_tr": "I22K907482",
+        "client": "FESTO",
+        "procedure": [
+          "Identified original language as DE, secondary as EN.",
+          "Login in DE, compared, found only length difference (ignored), No Action in DE.",
+          "Login in EN, compared, confirmed Scope TR changes in Selection Text and Text Symbols.",
+          "Entered Translation mode (DE to EN), maintained translations, saved and activated.",
+          "Re-validated changes by remote comparison (no differences).",
+          "Updated scoping sheet: Combined Status = 'Retrofit Done'."
+        ]
+      }
+    ]
+  },
+  "comparison_notes": {
+    "notes": [
+      "Bulk comparison can be performed via RSSYSCOMP (8 objects at a time), but you must know original and secondary languages beforehand.",
+      "Selection Texts have no direct insert icon – may require waiting for tooling scope to be completed.",
+      "Never use 'primary' or 'secondary' terms in scoping sheet comments.",
+      "Always cross-check both language versions before updating status.",
+      "If translations are incomplete, validate with SPOC whether scope TR includes them or not."
+    ]
+  },
+  "common_errors": [
+    "Language mismatch between original and secondary language.",
+    "Edit restrictions in secondary language.",
+    "Missing insert options for Selection Texts.",
+    "Manually editing REPT for MPC or DPC classes (should be avoided).",
+    "Object not activated after translation maintenance."
+  ],
+  "best_practices": [
+    "Maintain REPT first in original language, then maintain translations.",
+    "Never edit REPT manually for MPC and DPC classes.",
+    "Use Translation Mode when editing in the secondary language is restricted.",
+    "Always activate the object after text or translation maintenance.",
+    "Update scoping sheet only after validating both languages."
+  ],
+  "chatbot_responses": {
+    "followup_questions": [
+      "What is a REPT object in SAP?",
+      "Can REPT be safely imported in retrofit?",
+      "How do I identify the original language of a REPT object?",
+      "How to compare REPT between source and target systems?",
+      "What steps should be followed to maintain REPT in translated language?",
+      "What if I see differences in Selection Text but can't edit directly?",
+      "How is REPT retrofit status updated in the scoping sheet?",
+      "Can I use RSSYSCOMP for REPT comparison?",
+      "What are common issues faced during REPT retrofit?",
+      "What is the role of Translation Mode in REPT?",
+      "When should REPT objects not be touched manually?",
+      "Is it necessary to activate the object after translation?"
+    ]
+  }
+}
