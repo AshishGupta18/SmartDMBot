@@ -1,0 +1,59 @@
+direction: down
+
+start: Start { shape: circle }
+
+start -> prerequisites
+prerequisites: Prerequisites Met { shape: rectangle }
+
+prerequisites -> identify_diff
+identify_diff: Identify Differences { shape: rectangle }
+
+identify_diff -> access_systems
+access_systems: Access Source & Target SAP Systems { shape: rectangle }
+
+access_systems -> compare_method
+compare_method: Choose Comparison Method? { shape: diamond }
+
+compare_method -> automated: Automated (RSSYSCOMP)
+automated: Automated Comparison { shape: rectangle }
+automated -> rssyscomp_details
+rssyscomp_details: Go to RSSYSCOMP; Enter DOMD, Name(s), RFCs; Execute { shape: rectangle }
+rssyscomp_details -> analyze_report
+analyze_report: Analyze Comparison Report { shape: rectangle }
+analyze_report -> diff_identified
+
+compare_method -> manual: Manual
+manual: Manual Comparison { shape: rectangle }
+manual -> se11_both
+se11_both: Open SE11 in Source & Target; Display DOMA { shape: rectangle }
+se11_both -> compare_manually
+compare_manually: Manually Compare All Attributes { shape: rectangle }
+compare_manually -> diff_identified
+
+diff_identified: Differences Found? { shape: diamond }
+
+diff_identified -> no_diff: No
+no_diff: No Differences Found { shape: rectangle }
+no_diff -> end_node
+
+diff_identified -> yes_diff: Yes
+yes_diff: Apply Changes { shape: rectangle }
+
+yes_diff -> access_target
+access_target: Access Target System { shape: rectangle }
+access_target -> open_doma_change
+open_doma_change: Open DOMA for Change (SE11) { shape: rectangle }
+open_doma_change -> implement_changes
+implement_changes: Implement Differences (Match Source DOMA) { shape: rectangle }
+implement_changes -> save_activate
+save_activate: Save & Activate DOMA { shape: rectangle }
+
+save_activate -> verification
+verification: Verification { shape: rectangle }
+verification -> rerun_comparison
+rerun_comparison: Re-run Comparison (RSSYSCOMP or Manual) { shape: rectangle }
+rerun_comparison -> confirm_sync
+confirm_sync: Confirm Synchronization (No Differences) { shape: rectangle }
+
+confirm_sync -> end_node
+end_node: End { shape: circle }

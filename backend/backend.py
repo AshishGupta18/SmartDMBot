@@ -2,14 +2,16 @@ from flask import Flask, request, jsonify
 import os
 import json
 import numpy as np
+from datetime import datetime
 import faiss
 import pickle
 from dotenv import load_dotenv
 import google.generativeai as genai
-
+import subprocess
 # --- Load environment variables ---
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 # --- Configuration ---
 EMBEDDING_MODEL_NAME = "models/embedding-001"
@@ -220,9 +222,9 @@ def ask_question():
         answer = get_contextual_answer(query, context)
         # ✅ Post-process: reformat the output using Gemini again
         reformat_prompt = f"""
-                    Format the following answer into a structured and readable format:
+                    Format the following answer into a structured and readable format and do changes according to your knowledge:
         - Use bullet points or numbered steps
-        - Use bold for headers if needed
+        - Use bold for headers if needed*
         - Maintain spacing for readability
         Answer:
         {answer}
@@ -231,9 +233,74 @@ def ask_question():
         answer = structured_response
 
     final_answer = f"{source}\n\n{answer}"
+    
+    #Flowchart generate
+    # File paths
+    # Write answer to a temporary steps.txt file
+    steps_file_path = "steps.txt"
+    with open(steps_file_path, "w", encoding="utf-8") as f:
+        f.write(answer)
+    base_d2_file = "diagram.d2"  # still saved in root for quick reference
 
-    print(jsonify(final_answer))
-    return jsonify({"answer": final_answer})
+    # Create separate folders
+    output_d2_dir = os.path.join("output", "d2")
+    output_svg_dir = os.path.join("output", "svg")
+
+    # Create output subdirectories if not exist
+    os.makedirs(output_d2_dir, exist_ok=True)
+    os.makedirs(output_svg_dir, exist_ok=True)
+
+    # Timestamped filenames
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_d2_file = os.path.join(output_d2_dir, f"diagram_{timestamp}.d2")
+    svg_file = os.path.join(output_svg_dir, f"diagram_{timestamp}.svg")
+
+
+    # Read steps with safe UTF-8 encoding
+    with open(steps_file_path, "r", encoding="utf-8") as f:
+        steps = f.read()
+
+    # Prompt Gemini to generate valid D2 diagram
+    prompt = f"""
+    You are a developer assistant. Convert the following algorithm steps into a D2 flowchart.
+    Use correct syntax that will render without error in the D2 CLI.
+
+    Set the layout direction to top-down (vertical flow) using:
+    direction: down
+
+    Use basic shapes (rectangle, diamond for decisions), and arrows for flow.
+
+    Output only valid D2 syntax. Do not add explanation or markdown backticks.
+
+    Steps:
+    {steps}
+    """
+
+    print("⏳ Generating D2 diagram with Gemini...")
+    response = model.generate_content(prompt)
+    d2_code = response.text.strip()
+
+    # Save .d2 file
+    with open(base_d2_file, "w", encoding="utf-8") as f:
+        f.write(d2_code)
+
+    # Save backup .d2 with timestamp
+    with open(backup_d2_file, "w", encoding="utf-8") as f:
+        f.write(d2_code)
+
+    print(f"📄 D2 diagram saved as: {base_d2_file}")
+    print(f"🗂️  Backup created: {backup_d2_file}")
+
+    # Render .svg with d2 CLI
+    try:
+        subprocess.run(["d2", base_d2_file, svg_file], check=True)
+        print(f"✅ SVG generated: {svg_file}")
+        os.remove(steps_file_path)
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Error rendering D2 diagram: {e}")
+
+    return jsonify({"answer": final_answer.replace("\n", "<br>")})
+
 
 
 
