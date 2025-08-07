@@ -1,0 +1,118 @@
+{
+  "object_type": "IWPR",
+  "description": {
+    "definition": "IWPR refers to SAP Gateway OData projects created using the Service Builder. OData is a web protocol that allows for querying and updating SAP data using ABAP and modern web technologies like HTTP. These services are often consumed by external applications, platforms, and devices for integration with SAP systems.",
+    "format_in_scope": "R3TR-IWPR-ProjectName",
+    "components": {
+      "Data_Model": [
+        "Entity Types",
+        "Entity Sets",
+        "Associations",
+        "Association Sets",
+        "Complex Types",
+        "Model References (excluded during retrofit)"
+      ],
+      "Service_Implementation": [
+        "DPC Class (Data Provider Class)",
+        "MPC Class (Model Provider Class)"
+      ],
+      "Runtime_Artifacts": [
+        "Metadata document",
+        "Model classes",
+        "Generated classes"
+      ],
+      "Service_Maintenance": [
+        "System alias configuration",
+        "Service registration and activation"
+      ]
+    },
+    "usage_context": {
+      "basic": [
+        "Create and expose RESTful services using ABAP backend.",
+        "Used for integrating SAP data with external applications via OData protocol.",
+        "Built using transaction code SEGW."
+      ],
+      "advanced": [
+        "Customize data models and implement service operations in DPC/MPC classes.",
+        "Enhance services to handle business logic.",
+        "Ensure version consistency during dual maintenance (retrofit)."
+      ]
+    },
+    "retrofit_scope_handling": {
+      "pre_checks": [
+        "IWPR objects are not safe to import directly.",
+        "Scoping utility does not indicate NEW/EXISTING status.",
+        "Manually check object existence in target system using SEGW.",
+        "Use SE03 to check version history in source and target systems."
+      ],
+      "step_by_step": [
+        "Login to SAP system in original language of the project.",
+        "Open the project using SEGW in both source and target systems.",
+        "Expand 'Data Model' (excluding Model References).",
+        "Compare ALVs for Entity Types using Meld/WINmerge.",
+        "Copy new changes (e.g., additional properties/entities) from source to target.",
+        "Check and compare: Properties, Navigation, Complex Types, Associations, Entity Sets.",
+        "Do not manually modify DPC or MPC classes — only compare versions using SE03.",
+        "Regenerate project after applying changes.",
+        "Resolve generation errors related to missing ABAP fields (e.g., caused by imported structures).",
+        "Verify service runtime artifacts regeneration succeeded."
+      ],
+      "version_validation": [
+        "Use SE03 to identify latest TRs and customer changes.",
+        "If changes exist in target but not in source, confirm if they are intended.",
+        "Check DPC/MPC class method versions (e.g., UNITOFMEASURESET_UPDATE_ENTITY)."
+      ]
+    },
+    "priority_note": "Original language must be used while opening the SEGW project to ensure labels are retained in text elements (REPT).",
+    "note": "Supporting objects like IWSV, IWMO, IWOM, and IWSG must be treated separately and only NEW entries should be imported through ToC."
+  },
+  "tcode": "SEGW",
+  "tool_used": [
+    "SEGW (Gateway Builder)",
+    "SE03 (Version Check)",
+    "Meld / WinMerge (ALV comparison)"
+  ],
+  "retrofit_process": {
+    "new_object": {
+      "description": "New IWPR projects are not directly imported. They must be manually created in target using SEGW based on source structure.",
+      "steps": [
+        "Open SEGW in both systems and verify the project doesn’t exist in target.",
+        "If not present, recreate the project manually using the same name.",
+        "Copy the Data Model elements manually (Entity Types, Sets, Complex Types).",
+        "Do not include Model References during retrofit.",
+        "Regenerate project and ensure consistency with source system."
+      ]
+    },
+    "existing_object": {
+      "description": "For EXISTING IWPR projects, perform differential retrofit based on ALV comparison between source and target.",
+      "steps": [
+        "Open SEGW in both systems and navigate through Data Model.",
+        "Copy changes manually from source (properties, navigation, associations).",
+        "Ensure no DPC/MPC code is overwritten. Use SE03 to validate version differences.",
+        "Regenerate the project and verify it compiles and runs successfully."
+      ]
+    }
+  },
+  "comparison notes": {
+    "tool_scope_vs_service_scope": "IWPR is neither tool-scoped nor service-scoped in typical terms, but manual comparison of ALV screens is mandatory.",
+    "version_checking": "SE03 version check required especially for DPC/MPC class methods. Never manually overwrite custom code in these classes."
+  },
+  "common_errors": [
+    "Importing IWPR directly without checking if it exists in target.",
+    "Overwriting manually customized DPC/MPC classes.",
+    "Missing labels or REPT entries due to incorrect logon language.",
+    "Attempting to include Model References during retrofit.",
+    "Regeneration failure due to missing structures retrofitted separately."
+  ],
+  "best_practices": [
+    "Always perform SEGW comparison in the original language.",
+    "Exclude Model References when copying Data Model.",
+    "Never edit DPC/MPC methods manually during retrofit.",
+    "Use Meld or WinMerge to compare Entity Types ALVs.",
+    "Validate project regeneration after each structural change."
+  ],
+  "chatbot_responses": {
+    "faq_short": "IWPR is an SAP Gateway OData project object created using SEGW. It exposes backend data as RESTful services for external consumption.",
+    "faq_detailed": "IWPR represents an SAP Gateway OData project created using the SEGW transaction. It includes components like Entity Types, Entity Sets, DPC/MPC classes, and runtime artifacts. Retrofits must be handled manually by comparing source and target models, avoiding manual edits to class methods, and regenerating the project. SE03 is used to validate version history and ALVs can be compared using Meld or WinMerge."
+  }
+}

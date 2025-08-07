@@ -4,6 +4,8 @@ __pycache__/
 venv/
 .env
 backend/cache/
+backend/output/d2
+backend/output/svg
 
 # Node.js
 node_modules/

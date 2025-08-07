@@ -1,0 +1,103 @@
+{
+  "object type": "TABU",
+  "description": {
+    "basic": "TABU objects represent actual data entries (rows) in SAP database tables. Unlike transport objects such as TABL (table definitions), TABU transports contain the contents of a table, particularly used for customizing or configuration tables, and sometimes even customer-specific Z-tables. These are not about code but data movement across systems.",
+    "detailed": {
+      "purpose": "TABU exists to move table data (not structure) from one environment to another. In the context of SAP Dual Maintenance or Retrofit, it ensures consistent configuration/customizing entries in target systems post go-live or during selective retrofit.",
+      "technical_details": {
+        "technical_type": "TABU",
+        "code_presence": "No",
+        "versioning_available": "No",
+        "customization_possible": "Yes"
+      },
+      "scope_category": {
+        "scope_type": "Service Scope",
+        "explanation": "TABU is service scope because its inclusion and handling require expert manual analysis and cannot be fully automated reliably. It often involves business data or customizing entries where unintended transport can break downstream systems."
+      },
+      "usage_context": [
+        "Used when customizing tables like TDDAT, TVDIR, or custom Z-tables have entries that need to be synced from source (dev) to target (dual maintenance) system.",
+        "Commonly seen in ECC or S/4 projects where configuration entries are manually changed but need to be preserved across systems.",
+        "Typically handled by technical retrofit team with consultation from functional consultants (for business-critical tables)."
+      ]
+    }
+  },
+  "tcode": "SE16",
+  "tool_used": [
+    "SE16",
+    "SE03",
+    "E071",
+    "E071K",
+    "SE09",
+    "SE10",
+    "Excel",
+    "Custom scripts"
+  ],
+  "retrofit_process": {
+    "summary": "Retrofit of TABU involves offline comparison of table entries between systems. Since TABU represents data and not structure, its retrofit is fully manual and must be carefully controlled.",
+    "detailed_steps": [
+      "1. Identify TABU entries from transports in scope using E071 and E071K.",
+      "2. Compare table content (key + value) between source and target systems using SE16 or custom scripts.",
+      "3. Determine if the entry is new (ToC), modified (requires customer input), or redundant (No Action).",
+      "4. Add the required TABU entries via 'Include Objects' in the ToC TR, carefully validating each key.",
+      "5. Never include TABU with wildcard or partial keys — it may overwrite entire table content in the target system.",
+      "6. Consult functional teams before modifying configuration or business-critical tables.",
+      "7. Use SE03 and E071K to confirm inclusion of correct TABU entries.",
+      "8. Validate key data entries after transport in the target system manually.",
+      "9. Perform regression testing in QA or retrofit environment post transport."
+    ],
+    "comparison_details": {
+      "manual_required": true,
+      "comparison_method": "Offline table content comparison using SE16 and E071K."
+    },
+    "merge_scenarios": {
+      "automerge": "Not supported for TABU as versioning is absent; automerge is unsafe due to data nature.",
+      "conflict": "Occurs when the same key exists in both systems with different values. Requires business or customer input.",
+      "unchanged": "When the key exists in both systems with identical values. Marked as No Action."
+    },
+    "rfc": {
+      "supported": false,
+      "note": "RSSYSCOMP does not support TABU object comparison due to the nature of data entries."
+    }
+  },
+  "comparison notes": {
+    "manual": "TABU comparison is entirely manual using SE16 for both systems and referencing E071K to locate affected table entries.",
+    "automated": "Not applicable – automation is not reliable for TABU due to lack of versioning and key-specific sensitivity.",
+    "tip": "Avoid wildcards; only exact keys should be included in ToC transport to prevent unintended overwrites."
+  },
+  "common_errors": [
+    "Including TABU entries with wildcard or incomplete keys, leading to overwriting entire table contents.",
+    "Failure to consult with functional consultants before retrofitting configuration table entries.",
+    "Assuming RSSYSCOMP can handle TABU – it cannot.",
+    "Not validating table data after retrofit transport in the target system.",
+    "Overwriting entries in standard tables (e.g., MARA, T001) instead of excluding them."
+  ],
+  "best_practices": [
+    "Always compare key-value pairs in source and target before ToC addition.",
+    "Use E071K and SE16 side-by-side to validate entries.",
+    "Communicate with functional consultants for any business or configuration table changes.",
+    "Validate in Quality system after import before PRD movement."
+  ],
+  "chatbot_responses": {
+    "what_is_tabu": {
+      "short": "TABU contains table data entries (not code) and is retrofitted manually.",
+      "detailed": "TABU objects represent actual rows in SAP database tables. These are used to transport customizing/configuration data and must be manually analyzed and migrated. No versioning is available."
+    },
+    "how_to_retrofit_tabu": {
+      "short": "Use SE16 and E071K to manually compare and move data entries into ToC.",
+      "step_by_step": [
+        "1. Identify table entries using E071/E071K from the source transport.",
+        "2. Compare the same entries in SE16 between source and target.",
+        "3. Include exact key entries in ToC using SE03 (never use wildcards).",
+        "4. Validate entries post-transport in target and test thoroughly."
+      ]
+    },
+    "why_tabu_is_sensitive": {
+      "short": "Because data overwrites can happen without versioning.",
+      "detailed": "TABU involves actual table content, and incorrect transport (like with wildcard keys) can erase or corrupt configuration data in the target system. Therefore, every key must be validated and handled manually."
+    },
+    "tcode_for_tabu": {
+      "short": "Use SE16, SE03, E071, and E071K.",
+      "detailed": "SE16 is used to view table entries. SE03 and E071K help locate and manage TABU entries in transport requests. Excel is commonly used for offline comparison."
+    }
+  }
+}
