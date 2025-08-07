@@ -1,7 +1,7 @@
-const chat = document.getElementById('chat');
-const questionInput = document.getElementById('question');
-const sendBtn = document.getElementById('send-btn');
-const micBtn = document.getElementById('mic-btn');
+const chat = document.getElementById("chat");
+const questionInput = document.getElementById("question");
+const sendBtn = document.getElementById("send-btn");
+const micBtn = document.getElementById("mic-btn");
 
 async function typeText(element, text, delay = 20) {
   element.innerHTML = "";
@@ -9,7 +9,7 @@ async function typeText(element, text, delay = 20) {
   for (let i = 0; i < words.length; i++) {
     element.innerHTML += words[i];
     if (i !== words.length - 1) element.innerHTML += " ";
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
     chat.scrollTop = chat.scrollHeight;
   }
 }
@@ -31,6 +31,16 @@ async function send() {
     const res = await axios.post("http://127.0.0.1:5000/ask", { question });
     typingDiv.innerHTML = "";
     await typeText(typingDiv, `🤖 ${res.data.answer}`, 25);
+    // If SVG is present, display it below the answer
+    if (res.data.svg) {
+      const svgImg = document.createElement("img");
+      svgImg.src = `http://127.0.0.1:5000${res.data.svg}`;
+      svgImg.alt = "Generated diagram";
+      svgImg.style.display = "block";
+      svgImg.style.maxWidth = "100%";
+      svgImg.style.marginTop = "12px";
+      typingDiv.appendChild(svgImg);
+    }
   } catch (err) {
     typingDiv.innerHTML = "Error connecting to backend.";
   }
@@ -44,12 +54,13 @@ document.querySelector(".close-btn").addEventListener("click", () => {
 });
 
 sendBtn.addEventListener("click", send);
-questionInput.addEventListener("keydown", e => {
+questionInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") send();
 });
 
 micBtn.addEventListener("click", () => {
-  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  const recognition = new (window.SpeechRecognition ||
+    window.webkitSpeechRecognition)();
   recognition.lang = "en-US";
   recognition.interimResults = false;
 
@@ -66,7 +77,7 @@ micBtn.addEventListener("click", () => {
   recognition.start();
 });
 
-const { remote } = require('electron');
+const { remote } = require("electron");
 const win = remote.getCurrentWindow();
 
 document.querySelector(".minimize").addEventListener("click", () => {

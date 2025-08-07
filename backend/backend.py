@@ -8,6 +8,15 @@ import pickle
 from dotenv import load_dotenv
 import google.generativeai as genai
 import subprocess
+
+from flask import send_from_directory
+
+app = Flask(__name__)
+
+@app.route('/svg/<filename>')
+def serve_svg(filename):
+    return send_from_directory('output/svg', filename)
+
 # --- Load environment variables ---
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -25,7 +34,6 @@ TRAIN_DATA_DIR = "train_data"
 CHUNKS_CACHE_PATH = os.path.join(CACHE_DIR, "json_chunks.pkl")
 VECTORSTORE_CACHE_PATH = os.path.join(CACHE_DIR, "json_vectorstore.faiss")
 
-app = Flask(__name__)
 
 # --- Transform JSON to Text (optimized for Gemini) ---
 def transform_idoc_json_to_text(json_data, filename=None):
@@ -255,7 +263,6 @@ def ask_question():
     backup_d2_file = os.path.join(output_d2_dir, f"diagram_{timestamp}.d2")
     svg_file = os.path.join(output_svg_dir, f"diagram_{timestamp}.svg")
 
-
     # Read steps with safe UTF-8 encoding
     with open(steps_file_path, "r", encoding="utf-8") as f:
         steps = f.read()
@@ -299,7 +306,12 @@ def ask_question():
     except subprocess.CalledProcessError as e:
         print(f"❌ Error rendering D2 diagram: {e}")
 
-    return jsonify({"answer": final_answer.replace("\n", "<br>")})
+    svg_url = f"/svg/diagram_{timestamp}.svg"
+    return jsonify({
+        "answer": final_answer.replace("\n", "<br>"),
+        "svg": svg_url
+    })
+
 
 
 
