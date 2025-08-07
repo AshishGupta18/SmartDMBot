@@ -5,11 +5,18 @@ const micBtn = document.getElementById("mic-btn");
 
 async function typeText(element, text, delay = 20) {
   element.innerHTML = "";
-  const words = text.split(" ");
+
+  // First, process the text to convert **text** to <b>text</b>
+  let processedText = text.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+
+  // Split by words but preserve HTML tags
+  const words = processedText.split(/(\s+)/);
+
   for (let i = 0; i < words.length; i++) {
     element.innerHTML += words[i];
-    if (i !== words.length - 1) element.innerHTML += " ";
-    await new Promise((resolve) => setTimeout(resolve, delay));
+    if (i !== words.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
     chat.scrollTop = chat.scrollHeight;
   }
 }

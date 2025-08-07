@@ -1,53 +1,31 @@
 direction: down
 
-start_node: Start {
-  shape: circle
-  label: Start
-}
+CheckContext: |
+  Check context for
+  'iwpr' retrofit
+shape: rectangle
 
-step1: AccessIDoc {
-  label: "1. Access IDoc Type for Editing:\n- Open WE30\n- Enter Type/Extension\n- Select Type\n- Click Change"
-  shape: rectangle
-}
+IsInfoAvailable: |
+  Is 'iwpr' info
+  available?
+shape: diamond
 
-step2_decision: IsReleased {
-  label: "2. IDoc Released/Locked?"
-  shape: diamond
-}
+InfoNotAvailable: |
+  Info for 'iwpr'
+  not available
+shape: rectangle
 
-step3: CancelRelease {
-  label: "3. Cancel IDoc Type Release:\n- IDoc Type -> Release -> Cancel Release\n- Confirm Action"
-  shape: rectangle
-}
+AvailableProcesses: |
+  Context describes:
+  REPT, IDoc
+shape: rectangle
 
-step4: PerformChanges {
-  label: "4. Perform Structural Changes:\n- Add new segments\n- Modify segments/fields\n- Adjust hierarchies\n- Align with requirements"
-  shape: rectangle
-}
+RequestDoc: |
+  Request relevant
+  documentation
+shape: rectangle
 
-step5: SaveMods {
-  label: "5. Save Modifications"
-  shape: rectangle
-}
-
-step6: ReRelease {
-  label: "6. Re-release IDoc Type:\n- IDoc Type -> Release -> Release\n- Confirm Action"
-  shape: rectangle
-}
-
-end_node: End {
-  shape: circle
-  label: End
-}
-
-start_node -> step1
-step1 -> step2_decision
-
-step2_decision -> step3: Yes (Locked)
-step2_decision -> step4: No (Editable)
-
-step3 -> step4
-
-step4 -> step5
-step5 -> step6
-step6 -> end_node
+CheckContext -> IsInfoAvailable
+IsInfoAvailable -> InfoNotAvailable: No
+InfoNotAvailable -> AvailableProcesses
+AvailableProcesses -> RequestDoc
