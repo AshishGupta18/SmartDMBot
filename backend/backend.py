@@ -231,7 +231,7 @@ def ask_question():
         answer = get_contextual_answer(query, context)
         # ✅ Post-process: reformat the output using Gemini again
         reformat_prompt = f"""
-                    Format the following answer into a structured and readable format and do changes according to your knowledge:
+                    Format the following answer into a structured and readable format:
         - Use bullet points or numbered steps
         - Use bold for headers if needed*
         - Maintain spacing for readability
@@ -241,35 +241,31 @@ def ask_question():
         structured_response = get_general_answer(reformat_prompt)
         answer = structured_response
 
-    final_answer = f"{source}\n\n{answer}"
+    final_answer = f"{answer}"
     
     
     if best_distance <= DISTANCE_THRESHOLD:
-        #Flowchart generate
-        # File paths
-        # Write answer to a temporary steps.txt file
+    # Flowchart generation
         steps_file_path = "steps.txt"
         with open(steps_file_path, "w", encoding="utf-8") as f:
             f.write(answer)
-        base_d2_file = "diagram.d2"  # still saved in root for quick reference
 
         # Create separate folders
         output_d2_dir = os.path.join("output", "d2")
         output_svg_dir = os.path.join("output", "svg")
-
-        # Create output subdirectories if not exist
         os.makedirs(output_d2_dir, exist_ok=True)
         os.makedirs(output_svg_dir, exist_ok=True)
 
-        # Timestamped filenames
+        # Timestamp
+        
         backup_d2_file = os.path.join(output_d2_dir, f"diagram_{timestamp}.d2")
         svg_file = os.path.join(output_svg_dir, f"diagram_{timestamp}.svg")
 
-        # Read steps with safe UTF-8 encoding
+        # Read steps
         with open(steps_file_path, "r", encoding="utf-8") as f:
             steps = f.read()
 
-        # Prompt Gemini to generate valid D2 diagram
+        # Gemini prompt
         prompt = f"""
         You are a developer assistant. Convert the following algorithm steps into a D2 flowchart.
         Use correct syntax that will render without error in the D2 CLI.
@@ -289,25 +285,20 @@ def ask_question():
         response = model.generate_content(prompt)
         d2_code = response.text.strip()
 
-        # Save .d2 file
-        with open(base_d2_file, "w", encoding="utf-8") as f:
-            f.write(d2_code)
-
-        # Save backup .d2 with timestamp
+        # Save D2 to timestamped file (only)
         with open(backup_d2_file, "w", encoding="utf-8") as f:
             f.write(d2_code)
+        print(f"🗂️  D2 saved: {backup_d2_file}")
 
-        print(f"📄 D2 diagram saved as: {base_d2_file}")
-        print(f"🗂️  Backup created: {backup_d2_file}")
-
-        # Render .svg with d2 CLI
+        # Render from timestamped file
         try:
-            subprocess.run(["d2", base_d2_file, svg_file], check=True)
+            subprocess.run(["d2", backup_d2_file, svg_file], check=True)
             print(f"✅ SVG generated: {svg_file}")
             os.remove(steps_file_path)
         except subprocess.CalledProcessError as e:
             print(f"❌ Error rendering D2 diagram: {e}")
-               
+
+    # Make SVG accessible via URL
     svg_url = f"/svg/diagram_{timestamp}.svg"
     return jsonify({
         "answer": final_answer.replace("\n", "<br>"),
