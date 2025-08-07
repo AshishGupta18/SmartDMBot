@@ -1,0 +1,47 @@
+{
+  "object type": "Smartshift Retrofit",
+  "description": {
+    "overview": "Smartshift Retrofit is a process used to synchronize changes between the source ECC system and the target S/4HANA system, especially during migrations or parallel developments.",
+    "use_cases": [
+      "During cutovers or go-lives",
+      "During S/4HANA migrations",
+      "When two SAP environments are developed in parallel",
+      "When changes are made in lower systems that need to be replicated in higher or parallel systems"
+    ],
+    "types_of_retrofits": [
+      "Online Retrofit",
+      "Offline Retrofit"
+    ]
+  },
+  "tcode": "",
+  "tool_used": [
+    "SMART TOOL"
+  ],
+  "retrofit_process": {
+    "1. Getting TR list": "Customer shares the list of transport requests (TRs) that were moved to production within a defined timeframe. After validating the TR list, scoping is prepared and sent to the customer for approval.",
+    "2. Retrofit": "Identify changes in both source and target systems. Source changes are merged while retaining the target changes. Post-merge, remediation is performed by executing UC, EPC, HCC, and S4 results and fixing issues.",
+    "3. Deliverables": "After remediation, necessary status updates and comments are added. Deliverables are prepared, TR checks are done, TASKs of TR are released, and the finalized retrofit package is delivered to the customer."
+  },
+  "comparison notes": {
+    "context": "The retrofit process ensures that changes from the ECC system are safely adapted to the S/4HANA system without breaking compatibility, especially as systems are not in synch."
+  },
+  "common_errors": [
+    "Missing TR shared by customer in actual Source system",
+    "Unresolvable Conflicts during code merge due to incompatible changes",
+    "Failure in UC, EPC, HCC, or S4 remediation steps",
+    "Wrong updation of status"
+  ],
+  "best_practices": [
+    "Always validate the TR list before starting retrofit",
+    "Ensure proper scoping and customer approval",
+    "Retain target changes during code merges",
+    "Document every step with status and comments",
+    "Follow naming and documentation standards for deliverables"
+  ],
+  "chatbot_responses": {
+    "what is retrofit in smartshift?": "Retrofit in Smartshift is the process of merging source system changes (like ECC) into the target system (like S/4HANA) while retaining existing target modifications. It is used especially during go-lives, migrations, or parallel developments.",
+    "when is retrofit used?": "Retrofit is used during S/4HANA migrations, go-lives, when parallel SAP environments exist, or when changes in lower systems need replication in higher ones.",
+    "what are the stages in retrofit?": "The stages are: 1) Getting TR list, 2) Retrofit (code merge and remediation), 3) Deliverables (status, TR release, and handover).",
+    "what tools are used in smartshift retrofit?": "Smartshift Platform is used for code transformation, TR management, and automated remediation in the retrofit process."
+  }
+}
