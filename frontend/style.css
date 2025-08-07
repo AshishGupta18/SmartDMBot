@@ -17,13 +17,15 @@ body {
 }
 
 .chat-header {
-  background: #7f7f7fd7;
+  background: #717070d7;
   color: white;
   padding: 0 16px 0 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   min-height: 60px;
+  /* border-top-left-radius: 16px;
+border-top-right-radius: 16px; */
 }
 
 .chat-title {
@@ -133,7 +135,7 @@ body {
   background: #155ac8;
 }
 .widget {
-  border-radius: 16px;
+  /* border-radius: 16px; */
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   overflow: hidden;
 }

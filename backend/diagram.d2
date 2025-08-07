@@ -1,86 +1,83 @@
 direction: down
 
-RetrofitProcess: {
-  label: "Retrofit Process for ABAP Dictionary Data Elements (DTEL/DTED) in Tables"
-  shape: rectangle
+RetrofitProcess: "Retrofit Process for ENHO Enhancement" {
+    shape: rectangle
 }
 
-RetrofitProcess -> ScenariosTitle: { label: "Start Retrofit" }
-
-ScenariosTitle: {
-  label: "Detailed Retrofit Scenarios"
-  shape: rectangle
+NewExistingDecision: "Is it a New Enhancement Implementation?" {
+    shape: diamond
 }
 
-ScenariosTitle -> Scenario1.SRC_Start: { label: "Choose Scenario 1" }
-ScenariosTitle -> Scenario2.TGT_Start: { label: "Choose Scenario 2" }
-ScenariosTitle -> Scenario3.MERGE_Start: { label: "Choose Scenario 3" }
-
-Scenario1: {
-  label: "1. Source System Change Only"
-  direction: down
-  SRC_Start: { label: "Start Scenario 1" }
-  SRC1: { label: "Compare Versions\n(Scope TR vs. Previous in Source)" }
-  SRC2: { label: "Fetch Remote Version\n(from Target System)" }
-  SRC3: { label: "Identify Specific Changes\n(e.g., Field Labels, Domain)" }
-  SRC4: { label: "Transport Data Element Changes\n(Source to Target)" }
-  SRC5: { label: "Activate Data Element\nin Target System" }
-  SRC_End: { label: "Scenario 1 Complete" }
-
-  SRC_Start -> SRC1
-  SRC1 -> SRC2
-  SRC2 -> SRC3
-  SRC3 -> SRC4
-  SRC4 -> SRC5
-  SRC5 -> SRC_End
+ImportTOC: "Import object via Transport of Copies (TOC) to target system" {
+    shape: rectangle
 }
 
-Scenario2: {
-  label: "2. Target System Change Only"
-  direction: down
-  TGT_Start: { label: "Start Scenario 2" }
-  TGT1: { label: "Compare Target Versions\n(Active vs. Previous in Target)" }
-  TGT2: { label: "Is change business-required\nmodification?" shape: diamond }
-  TGT3: { label: "Retain Target-Specific Changes" }
-  TGT4: { label: "Prevent Overwrite\nwith Source Content" }
-  TGT5: { label: "Document Decision" }
-  TGT_End: { label: "Scenario 2 Complete" }
-
-  TGT_Start -> TGT1
-  TGT1 -> TGT2
-  TGT2 -> TGT3: { label: "Yes" }
-  TGT2 -> TGT_No_Retain: { label: "No" }
-  TGT3 -> TGT4
-  TGT4 -> TGT5
-  TGT5 -> TGT_End
-  TGT_No_Retain: { label: "Target Change Not Retained" }
-  TGT_No_Retain -> TGT_End
+PreCheck: "Pre-Check: Verify active version of object in source system matches current Scope version" {
+    shape: rectangle
 }
 
-Scenario3: {
-  label: "3. Both Source and Target System Changes (Merge Scenario)"
-  direction: down
-  MERGE_Start: { label: "Start Scenario 3" }
-  MERGE1: { label: "Compare Source Versions\n(TR vs. Previous)" }
-  MERGE2: { label: "Compare Target Versions\n(Active vs. Previous)" }
-  MERGE3: { label: "Perform Detailed Line-by-Line Comparison\n(incl. Domain, Field Labels)" }
-  MERGE4: { label: "Manually Merge Relevant Changes\ninto Target System" }
-  MERGE5: { label: "Activate Merged Object\nand Document Decisions" }
-  MERGE_End: { label: "Scenario 3 Complete" }
-
-  MERGE_Start -> MERGE1
-  MERGE1 -> MERGE2
-  MERGE2 -> MERGE3
-  MERGE3 -> MERGE4
-  MERGE4 -> MERGE5
-  MERGE5 -> MERGE_End
+GoToSE38: "Go to transaction SE38 in target system" {
+    shape: rectangle
 }
 
-RetrofitComplete: {
-  label: "Retrofit Process Fully Complete"
-  shape: circle
+ExecuteRSSYSCOMP: "Execute program RSSYSCOMP" {
+    shape: rectangle
+    label: "Execute program RSSYSCOMP\n- Provide RFC Destination\n- Select 'Freely Selected Objects'\n- Enter specific object name(s)"
 }
 
-Scenario1.SRC_End -> RetrofitComplete: { label: "Flow to Completion" }
-Scenario2.TGT_End -> RetrofitComplete: { label: "Flow to Completion" }
-Scenario3.MERGE_End -> RetrofitComplete: { label: "Flow to Completion" }
+ExecuteComparison: "Execute version comparison" {
+    shape: rectangle
+}
+
+DiagnosisDecision: "Diagnosis Column: 'IDENTICAL'?" {
+    shape: diamond
+}
+
+NoFurtherAction: "No further action required for this object" {
+    shape: rectangle
+}
+
+CompareTargetPrevActive: "Compare Target Version with Previous Active Version" {
+    shape: rectangle
+}
+
+LineByLineCompare: "Perform Line-by-Line Version Comparison (Source vs Target)" {
+    shape: rectangle
+}
+
+ManualMerge: "Manually Merge Relevant Changes (from Source to Target)" {
+    shape: rectangle
+}
+
+ActivateObject: "Activate Merged Object in target system" {
+    shape: rectangle
+}
+
+DocumentChanges: "Document Changes (reasoning, comparison results, verification)" {
+    shape: rectangle
+}
+
+EndProcess: "End of Retrofit Process" {
+    shape: rectangle
+}
+
+RetrofitProcess -> NewExistingDecision
+
+NewExistingDecision -> ImportTOC : "Yes (New)"
+ImportTOC -> EndProcess
+
+NewExistingDecision -> PreCheck : "No (Existing)"
+PreCheck -> GoToSE38
+GoToSE38 -> ExecuteRSSYSCOMP
+ExecuteRSSYSCOMP -> ExecuteComparison
+ExecuteComparison -> DiagnosisDecision
+
+DiagnosisDecision -> NoFurtherAction : "Yes"
+NoFurtherAction -> EndProcess
+
+DiagnosisDecision -> CompareTargetPrevActive : "No ('NOT IDENTICAL') or Subtle Differences"
+CompareTargetPrevActive -> LineByLineCompare
+LineByLineCompare -> ManualMerge
+ManualMerge -> ActivateObject
+ActivateObject -> DocumentChanges
+DocumentChanges -> EndProcess
