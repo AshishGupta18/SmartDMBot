@@ -8,6 +8,7 @@ import pickle
 from dotenv import load_dotenv
 import google.generativeai as genai
 import subprocess
+import sys
 
 from flask import send_from_directory
 
@@ -23,6 +24,17 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 model = genai.GenerativeModel("gemini-2.5-flash")
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
+
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and PyInstaller .exe"""
+    if getattr(sys, 'frozen', False):
+        base_path = sys._MEIPASS  # PyInstaller sets this
+    else:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+
 # --- Configuration ---
 EMBEDDING_MODEL_NAME = "models/embedding-001"
 GENERATIVE_MODEL_NAME = "gemini-2.5-flash"
@@ -31,7 +43,7 @@ CHUNK_OVERLAP = 200
 TOP_K = 5
 DISTANCE_THRESHOLD = 0.70
 CACHE_DIR = "cache"
-TRAIN_DATA_DIR = "train_data"
+TRAIN_DATA_DIR = resource_path("train_data")
 CHUNKS_CACHE_PATH = os.path.join(CACHE_DIR, "json_chunks.pkl")
 VECTORSTORE_CACHE_PATH = os.path.join(CACHE_DIR, "json_vectorstore.faiss")
 
@@ -311,4 +323,4 @@ def ask_question():
 
 # --- Run App ---
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app.run(host="127.0.0.1",port=5000, debug=True)

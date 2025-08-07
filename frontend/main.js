@@ -1,4 +1,8 @@
 const { app, BrowserWindow, screen } = require('electron');
+const path = require('path');
+const { spawn } = require('child_process');
+
+let backendProcess;
 
 function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
@@ -15,7 +19,7 @@ function createWindow() {
     resizable: true,
     minimizable: true,
     maximizable: true,
-    frame: false, // We'll build our own header bar with minimize/close
+    frame: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -25,4 +29,34 @@ function createWindow() {
   win.loadFile('index.html');
 }
 
-app.whenReady().then(createWindow);
+function startBackend() {
+  // Detect correct path depending on development vs production
+  const backendExePath = app.isPackaged
+  ? path.join(process.resourcesPath, 'backend', 'backend.exe')
+  : path.join(__dirname, '../backend/dist/backend/backend.exe');
+
+  console.log(`Starting backend from: ${backendExePath}`);
+
+  backendProcess = spawn(backendExePath, [], {
+    stdio: 'inherit',
+    shell: true,
+  });
+
+  backendProcess.on('error', (err) => {
+    console.error('Failed to start backend:', err);
+  });
+
+  backendProcess.on('close', (code) => {
+    console.log(`Backend exited with code ${code}`);
+  });
+}
+
+app.whenReady().then(() => {
+  startBackend();
+  createWindow();
+});
+
+app.on('window-all-closed', () => {
+  if (backendProcess) backendProcess.kill(); // kill backend when window closes
+  if (process.platform !== 'darwin') app.quit();
+});

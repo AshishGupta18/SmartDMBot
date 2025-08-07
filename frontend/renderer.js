@@ -58,7 +58,8 @@ async function send() {
   chat.scrollTop = chat.scrollHeight;
 
   try {
-    const res = await axios.post("http://127.0.0.1:5000/ask", { question });
+    const BASE_URL = "http://localhost:5000";
+    const res = await axios.post(`${BASE_URL}/ask`, { question });
     typingDiv.innerHTML = "";
     await typeText(typingDiv, `🤖 ${res.data.answer}`, 25);
     // If SVG is present, display it below the answer
@@ -67,7 +68,7 @@ async function send() {
       imageContainer.style.marginTop = "12px";
 
       const svgImg = document.createElement("img");
-      svgImg.src = `http://127.0.0.1:5000${res.data.svg}`;
+      svgImg.src = `${BASE_URL}${res.data.svg}`;
       svgImg.alt = "Generated diagram";
       svgImg.style.display = "block";
       svgImg.style.maxWidth = "100%";
