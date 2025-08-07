@@ -1,0 +1,99 @@
+{
+  "object type": "ENHO",
+  "description": "Procedure for handling Enhancement Implementations depending on whether they are new or already exist in the target system.",
+  "tcode": ["SE19", "SE38"],
+  "tool_used": [
+    {
+      "tool": "RSSYSCOMP",
+      "purpose": "To compare object versions between source and target systems via RFC"
+    },
+    {
+      "tool": "SE19",
+      "purpose": "To manage enhancement implementations and make manual changes"
+    }
+  ],
+  "retrofit_process": {
+    "NewScope": "Import the object via TOC (Transport of Copies) to the target system.",
+    "AlreadyExistedScope": {
+      "PreCheck": "Ensure the active version in the source system matches the Scope version.",
+      "Steps": [
+        {
+          "Step": 1,
+          "Action": "Go to SE38 and run program RSSYSCOMP in the target system.",
+          "Details": [
+            "Provide the RFC from target to source.",
+            "Select 'Freely Selected Objects'.",
+            "Enter the object name."
+          ]
+        },
+        {
+          "Step": 2,
+          "Action": "Execute version comparison.",
+          "Details": [
+            "Check the Diagnosis column.",
+            "If IDENTICAL: No action required.",
+            "If NOT IDENTICAL: Fix is needed.",
+            "If there are no customer changes in target, and source active TR is scope TR, then it is safe to import and once it is imported we need to do version management and reapply tool rules if any."
+          ]
+        },
+        {
+          "Step": 3,
+          "Action": "Open the comparison screen by selecting the object name.",
+          "Details": [
+            "Add only new changes without overwriting target changes.",
+            "Use SE19 to enter the enhancement implementation name and make manual changes."
+          ]
+        },
+        {
+          "Step": "Special Case",
+          "Condition": "If active version TR is not same as Scope Version TR",
+          "Action": "Fetch remote comparison.",
+          "Details": [
+            "Go to SE19 in the target system.",
+            "Provide enhancement name.",
+            "Use Utilities > Version Management.",
+            "Select 'Fetch Remote Comparison'.",
+            "Provide RFC Destination.",
+            "Compare target active and source scope versions."
+          ]
+        }
+      ]
+    }
+  },
+  "comparison notes": [
+    "Always confirm the active version matches your Scope version before any action.",
+    "Never overwrite newer target changes.",
+    "Use remote comparison to validate versions."
+  ],
+  "common_errors": [
+    "Overwriting new changes in the target system without version check.",
+    "Skipping version comparison leading to inconsistency.",
+    "Not performing remote comparison when TR versions differ."
+  ],
+  "best_practices": [
+    "Always perform version comparison before transport.",
+    "Use RSSYSCOMP for reliable version status check.",
+    "Use SE19’s version management to fetch remote versions safely.",
+    "Document any manual changes made post-import."
+  ],
+  "chatbot_responses": {
+    "followup_questions": [
+      {
+        "question": "When do I import via TOC?",
+        "answer": "When the object is a new scope and does not exist in the target system."
+      },
+      {
+        "question": "What if the Diagnosis status is IDENTICAL?",
+        "answer": "No action is needed—the versions are the same."
+      },
+      {
+        "question": "How do I compare versions remotely?",
+        "answer": "Use SE19 > Utilities > Version Management > Fetch Remote Comparison."
+      },
+      {
+        "question": "Why do I use RSSYSCOMP?",
+        "answer": "It helps compare object versions between systems via RFC."
+      }
+    ]
+  }
+}

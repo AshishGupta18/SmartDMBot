@@ -1,41 +1,135 @@
 from flask import Flask, request, jsonify
 import os
-from dotenv import load_dotenv
+import json
 import numpy as np
+from datetime import datetime
 import faiss
-import PyPDF2
-import google.generativeai as genai
 import pickle
-
-# Load environment variables from .env file
+from dotenv import load_dotenv
+import google.generativeai as genai
+import subprocess
+# --- Load environment variables ---
 load_dotenv()
-
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 # --- Configuration ---
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-PDF_PATH = "workbook.pdf"
 EMBEDDING_MODEL_NAME = "models/embedding-001"
 GENERATIVE_MODEL_NAME = "gemini-2.5-flash"
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 100
+CHUNK_SIZE = 1500
+CHUNK_OVERLAP = 200
 TOP_K = 5
 DISTANCE_THRESHOLD = 0.70
 CACHE_DIR = "cache"
-pdf_filename = os.path.splitext(os.path.basename(PDF_PATH))[0]
-CHUNKS_CACHE_PATH = os.path.join(CACHE_DIR, f"{pdf_filename}_chunks.pkl")
-VECTORSTORE_CACHE_PATH = os.path.join(CACHE_DIR, f"{pdf_filename}_vectorstore.faiss")
+TRAIN_DATA_DIR = "train_data"
+CHUNKS_CACHE_PATH = os.path.join(CACHE_DIR, "json_chunks.pkl")
+VECTORSTORE_CACHE_PATH = os.path.join(CACHE_DIR, "json_vectorstore.faiss")
 
 app = Flask(__name__)
 
-# --- Helper Functions ---
-def extract_text_from_pdf(pdf_path):
-    text = ""
-    with open(pdf_path, 'rb') as pdf_file:
-        pdf_reader = PyPDF2.PdfReader(pdf_file)
-        for page in pdf_reader.pages:
-            text += page.extract_text() or ""
-    return text
+# --- Transform JSON to Text (optimized for Gemini) ---
+def transform_idoc_json_to_text(json_data, filename=None):
+    lines = []
 
+    if filename:
+        base_title = os.path.splitext(filename)[0].replace("_", " ").strip()
+        lines.append(f"--- Source: {base_title} ---")
+        lines.append(f"{base_title} Retrofit Guide\n")
+
+    if "object type" in json_data:
+        lines.append(f"Object Type: {json_data['object type']}")
+        lines.append("")
+
+    if "description" in json_data:
+        desc = json_data["description"]
+        lines.append("Description:")
+        if isinstance(desc, dict):
+            for k, v in desc.items():
+                if isinstance(v, dict):
+                    lines.append(f"  {k.capitalize()}:")
+                    for subk, subv in v.items():
+                        lines.append(f"    {subk}: {subv}")
+                else:
+                    lines.append(f"  {k.capitalize()}: {v}")
+        else:
+            lines.append(f"  {desc}")
+        lines.append("")
+
+    if "tcode" in json_data:
+        lines.append(f"TCode: {json_data['tcode']}")
+        lines.append("")
+
+    if "tool_used" in json_data:
+        lines.append("Tools Used:")
+        for tool in json_data["tool_used"]:
+            lines.append(f"- {tool}")
+        lines.append("")
+
+    if "retrofit_process" in json_data:
+        lines.append("Retrofit Process:")
+        if isinstance(json_data["retrofit_process"], dict):
+            for k, v in json_data["retrofit_process"].items():
+                lines.append(f"  {k}: {v}")
+        else:
+            lines.append(f"  {json_data['retrofit_process']}")
+        lines.append("")
+
+    if "comparison notes" in json_data:
+        lines.append("Comparison Notes:")
+        if isinstance(json_data["comparison notes"], dict):
+            for k, v in json_data["comparison notes"].items():
+                lines.append(f"  {k}: {v}")
+        else:
+            lines.append(f"  {json_data['comparison notes']}")
+        lines.append("")
+
+    if "common_errors" in json_data:
+        lines.append("Common Errors:")
+        for err in json_data["common_errors"]:
+            lines.append(f"- {err}")
+        lines.append("")
+
+    if "best_practices" in json_data:
+        lines.append("Best Practices:")
+        for practice in json_data["best_practices"]:
+            lines.append(f"- {practice}")
+        lines.append("")
+
+    if "chatbot_responses" in json_data:
+        lines.append("Chatbot Responses:")
+        for k, v in json_data["chatbot_responses"].items():
+            lines.append(f"{k}:")
+            if isinstance(v, dict):
+                for subk, subv in v.items():
+                    if isinstance(subv, list):
+                        for item in subv:
+                            lines.append(f"  - {item}")
+                    else:
+                        lines.append(f"  {subk}: {subv}")
+            else:
+                lines.append(f"  {v}")
+        lines.append("")
+
+    return "\n".join(lines)
+
+# --- Load and transform all JSON files into text ---
+def load_text_from_json_folder(folder_path):
+    all_text = ""
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.json'):
+            file_path = os.path.join(folder_path, filename)
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    formatted_text = transform_idoc_json_to_text(data, filename)
+                    all_text += formatted_text + "\n\n"
+            except json.JSONDecodeError as e:
+                print(f"❌ JSON error in file: {filename} → {e}")
+            except Exception as e:
+                print(f"⚠️ Unexpected error in file: {filename} → {e}")
+    return all_text
+
+# --- Split text into overlapping chunks ---
 def get_text_chunks(text):
     chunks = []
     start = 0
@@ -45,6 +139,7 @@ def get_text_chunks(text):
         start += CHUNK_SIZE - CHUNK_OVERLAP
     return chunks
 
+# --- Prepare vectorstore and cache ---
 def setup_chatbot():
     os.makedirs(CACHE_DIR, exist_ok=True)
     genai.configure(api_key=GEMINI_API_KEY)
@@ -55,10 +150,18 @@ def setup_chatbot():
         vectorstore = faiss.read_index(VECTORSTORE_CACHE_PATH)
         return vectorstore, text_chunks
 
-    raw_text = extract_text_from_pdf(PDF_PATH)
+    raw_text = load_text_from_json_folder(TRAIN_DATA_DIR)
     text_chunks = get_text_chunks(raw_text)
-    embeddings = [genai.embed_content(model=EMBEDDING_MODEL_NAME, content=chunk, task_type="retrieval_document")['embedding'] for chunk in text_chunks]
+
+    embeddings = [
+        genai.embed_content(
+            model=EMBEDDING_MODEL_NAME,
+            content=chunk,
+            task_type="retrieval_document"
+        )['embedding'] for chunk in text_chunks
+    ]
     embeddings_np = np.array(embeddings, dtype='float32')
+
     dimension = embeddings_np.shape[1]
     index = faiss.IndexFlatL2(dimension)
     index.add(embeddings_np)
@@ -67,12 +170,16 @@ def setup_chatbot():
         pickle.dump(text_chunks, f)
     faiss.write_index(index, VECTORSTORE_CACHE_PATH)
 
+    for i, chunk in enumerate(text_chunks[:5]):
+        print(f"Chunk {i} preview:\n{chunk[:300]}\n---\n")
+
     return index, text_chunks
 
 vectorstore, text_chunks = setup_chatbot()
 
+# --- Prompt Construction ---
 def get_contextual_answer(query, context):
-    prompt = f"""You are a helpful assistant. 
+    prompt = f"""You are a helpful assistant.
 Answer based only on this context:
 ---
 {context}
@@ -89,25 +196,114 @@ def get_general_answer(query):
     response = model.generate_content(prompt)
     return response.text
 
+# --- API Endpoint ---
 @app.route('/ask', methods=['POST'])
 def ask_question():
     data = request.get_json()
     query = data.get("question", "")
 
-    query_embedding = genai.embed_content(model=EMBEDDING_MODEL_NAME, content=query, task_type="retrieval_query")['embedding']
+    query_embedding = genai.embed_content(
+        model=EMBEDDING_MODEL_NAME,
+        content=query,
+        task_type="retrieval_query"
+    )['embedding']
     query_embedding = np.array([query_embedding], dtype='float32')
 
     distances, indices = vectorstore.search(query_embedding, k=TOP_K)
     best_distance = distances[0][0]
 
     if best_distance > DISTANCE_THRESHOLD:
+        source = "🔍 *Answer generated by Gemini (no matching training data)*"
         answer = get_general_answer(query)
     else:
         retrieved_chunks = [text_chunks[i] for i in indices[0]]
         context = "\n---\n".join(retrieved_chunks)
+        source = "📚 *Answer based on your training data (train_data)*"
         answer = get_contextual_answer(query, context)
+        # ✅ Post-process: reformat the output using Gemini again
+        reformat_prompt = f"""
+                    Format the following answer into a structured and readable format and do changes according to your knowledge:
+        - Use bullet points or numbered steps
+        - Use bold for headers if needed*
+        - Maintain spacing for readability
+        Answer:
+        {answer}
+        """
+        structured_response = get_general_answer(reformat_prompt)
+        answer = structured_response
 
-    return jsonify({"answer": answer})
+    final_answer = f"{source}\n\n{answer}"
+    
+    #Flowchart generate
+    # File paths
+    # Write answer to a temporary steps.txt file
+    steps_file_path = "steps.txt"
+    with open(steps_file_path, "w", encoding="utf-8") as f:
+        f.write(answer)
+    base_d2_file = "diagram.d2"  # still saved in root for quick reference
 
+    # Create separate folders
+    output_d2_dir = os.path.join("output", "d2")
+    output_svg_dir = os.path.join("output", "svg")
+
+    # Create output subdirectories if not exist
+    os.makedirs(output_d2_dir, exist_ok=True)
+    os.makedirs(output_svg_dir, exist_ok=True)
+
+    # Timestamped filenames
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_d2_file = os.path.join(output_d2_dir, f"diagram_{timestamp}.d2")
+    svg_file = os.path.join(output_svg_dir, f"diagram_{timestamp}.svg")
+
+
+    # Read steps with safe UTF-8 encoding
+    with open(steps_file_path, "r", encoding="utf-8") as f:
+        steps = f.read()
+
+    # Prompt Gemini to generate valid D2 diagram
+    prompt = f"""
+    You are a developer assistant. Convert the following algorithm steps into a D2 flowchart.
+    Use correct syntax that will render without error in the D2 CLI.
+
+    Set the layout direction to top-down (vertical flow) using:
+    direction: down
+
+    Use basic shapes (rectangle, diamond for decisions), and arrows for flow.
+
+    Output only valid D2 syntax. Do not add explanation or markdown backticks.
+
+    Steps:
+    {steps}
+    """
+
+    print("⏳ Generating D2 diagram with Gemini...")
+    response = model.generate_content(prompt)
+    d2_code = response.text.strip()
+
+    # Save .d2 file
+    with open(base_d2_file, "w", encoding="utf-8") as f:
+        f.write(d2_code)
+
+    # Save backup .d2 with timestamp
+    with open(backup_d2_file, "w", encoding="utf-8") as f:
+        f.write(d2_code)
+
+    print(f"📄 D2 diagram saved as: {base_d2_file}")
+    print(f"🗂️  Backup created: {backup_d2_file}")
+
+    # Render .svg with d2 CLI
+    try:
+        subprocess.run(["d2", base_d2_file, svg_file], check=True)
+        print(f"✅ SVG generated: {svg_file}")
+        os.remove(steps_file_path)
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Error rendering D2 diagram: {e}")
+
+    return jsonify({"answer": final_answer.replace("\n", "<br>")})
+
+
+
+
+# --- Run App ---
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(port=5000, debug=True)

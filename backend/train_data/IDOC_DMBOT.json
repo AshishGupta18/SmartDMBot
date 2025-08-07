@@ -1,0 +1,142 @@
+{
+  "object type": "IDOC",
+  "description": "IDoc (Intermediate Document) is a standard SAP structure used to exchange business data between SAP systems and external systems asynchronously. A basic type defines the standard structure of an IDoc.",
+  "tcode": ["WE30", "WE31", "SE16"],
+  "tool_used": [
+    {
+      "tool": "WE30",
+      "purpose": "Used to create and edit IDoc types (Basic Types and Extensions)."
+    },
+    {
+      "tool": "WE31",
+      "purpose": "Used to create and edit segments used in IDocs."
+    },
+    {
+      "tool": "SE16",
+      "purpose": "Used to display and modify table entries, including segment release status."
+    }
+  ],
+  "retrofit_process": {
+    "overview": "Basic Types (IDoc) are usually not imported via ToC due to dependency on TABU entries. Manual creation is required during retrofit.",
+    "cases": [
+      {
+        "name": "Case 1 - New IDoc",
+        "steps": [
+          "Go to WE30 and enter object name.",
+          "Select 'Basic Type' radio button.",
+          "Click on 'Create'.",
+          "Check if required segment exists in target; create if missing using WE31.",
+          "Create segment with same name, structure, and field types as in source.",
+          "Check scoping sheet to confirm TABL entry; if not found, consult customer.",
+          "Save. Do not release segment if it’s not released in source.",
+          "Add segments to IDoc using correct hierarchy (child/same level)."
+        ]
+      },
+      {
+        "name": "Case 2 - Existing IDoc",
+        "steps": [
+          "Use WE30 to open object and click 'Change'.",
+          "If unable to edit, check release status.",
+          "Cancel release using menu or debug method if needed.",
+          "Make required changes as per source and re-release if necessary."
+        ]
+      }
+    ],
+    "debug_workaround": {
+      "description": "Use this if the release/cancel release option doesn’t work.",
+      "steps": [
+        "Open table EDISDEF in SE16 and enter segment name.",
+        "Activate debug mode using /h.",
+        "Change CODE from SHOW to EDIT and execute.",
+        "Delete the value 'X' in the closed field and save.",
+        "Now check in WE31 — release flag will be removed."
+      ]
+    }
+  },
+  "comparison notes": {
+    "object_type": "Basic Type",
+    "tcode": "WE30",
+    "table": "EDBAS",
+    "things_to_remember": [
+      "IDoc basic types are usually manually created during retrofit.",
+      "Segments must match exactly with source system.",
+      "Releasing segments when not released in source can cause future issues."
+    ],
+    "structured_steps": {
+      "create_new_idoc": [
+        "Go to WE30",
+        "Select 'Basic Type', click Create",
+        "Enter name, description, version",
+        "Add segments using correct hierarchy",
+        "Save without releasing unless required"
+      ],
+      "create_segment": [
+        "Go to WE31",
+        "Enter segment name and click Create",
+        "Add fields (name, type, length)",
+        "Save and avoid releasing if not done in source"
+      ]
+    }
+  },
+  "common_errors": [
+    {
+      "error": "Segment not editable in WE31",
+      "solution": "Use debug workaround via SE16 on EDISDEF to cancel release"
+    },
+    {
+      "error": "Segment structure mismatch",
+      "solution": "Ensure fields, types, and hierarchy exactly match source system"
+    },
+    {
+      "error": "Cannot change Basic Type",
+      "solution": "Check release status and cancel it before making edits"
+    }
+  ],
+  "best_practices": [
+    "Always check scoping sheet before creating segment.",
+    "Avoid using ToC for IDoc import due to TABU dependency.",
+    "Match segment structure and release status with source.",
+    "Use proper hierarchy when adding segments.",
+    "Use debug method cautiously for release cancellation."
+  ],
+  "chatbot_responses": {
+    "followup_questions": [
+      {
+        "question": "How to create a new IDoc in target system?",
+        "answer": "Use WE30 to create a new Basic Type. Check and create required segments using WE31. Add segments and save without releasing if not released in source."
+      },
+      {
+        "question": "What to do if I can't edit the IDoc?",
+        "answer": "Check if it’s released. If yes, cancel the release using the menu or debug workaround."
+      },
+      {
+        "question": "How to cancel segment release if UI option fails?",
+        "answer": "Use SE16 to open EDISDEF, activate debug, change CODE to EDIT, delete 'X' in closed field and save."
+      },
+      {
+        "question": "Do I need to release segments if they are not released in source?",
+        "answer": "No. Maintain the same release status as the source system."
+      },
+      {
+        "question": "Why is ToC not preferred for IDoc migration?",
+        "answer": "Because IDoc objects are linked to TABU entries which are not reliably transported via ToC."
+      },
+      {
+        "question": "Where can I find the structure of an existing IDoc?",
+        "answer": "Use WE30 to view the hierarchy and structure. For segments, use WE31."
+      },
+      {
+        "question": "What is the difference between Basic Type and Extension?",
+        "answer": "Basic Type is the original structure, Extension is a custom structure based on a Basic Type with additional segments."
+      },
+      {
+        "question": "What is the purpose of WE30 vs WE31?",
+        "answer": "WE30 is used to create/edit IDocs. WE31 is used to create/edit segments."
+      },
+      {
+        "question": "What should I check before creating a new segment?",
+        "answer": "Check the scoping sheet for segment presence, and ensure exact match with source system."
+      }
+    ]
+  }
+}
