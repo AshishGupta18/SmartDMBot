@@ -1,0 +1,18 @@
+direction: down
+
+start: Start {shape: diamond}
+overview: Retrofit Information Overview {shape: rectangle}
+tabl_info: "TABL Object: No specific detailed steps or flowchart available" {shape: rectangle}
+other_info: "Detailed retrofit processes are described for:" {shape: rectangle}
+dtel_proc: "Data Element (DTEL/DTED)" {shape: rectangle}
+interface_proc: "Interface" {shape: rectangle}
+end: End {shape: diamond}
+
+start -> overview
+overview -> tabl_info
+overview -> other_info
+other_info -> dtel_proc
+other_info -> interface_proc
+tabl_info -> end
+dtel_proc -> end
+interface_proc -> end

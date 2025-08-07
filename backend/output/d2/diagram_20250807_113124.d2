@@ -1,0 +1,104 @@
+direction: down
+
+Retrofit: "Retrofitting IWPR" {
+  shape: rectangle
+}
+
+tech_retrofit: "1. Technological Retrofit" {
+  shape: rectangle
+}
+prog_content_retrofit: "2. Programmatic & Content Retrofit" {
+  shape: rectangle
+}
+oper_strat_retrofit: "3. Operational & Strategic Retrofit" {
+  shape: rectangle
+}
+org_culture_gov_retrofit: "4. Organizational Culture & Governance Retrofit" {
+  shape: rectangle
+}
+
+// Technological Retrofit
+adv_digital_tools: "Advanced Digital Tools" {
+  shape: rectangle
+}
+data_journ_viz: "Data Journalism & Visualization" {
+  shape: rectangle
+}
+ai_automation_int: "AI & Automation Integration" {
+  shape: rectangle
+}
+cybersecurity_enhance: "Cybersecurity Enhancement" {
+  shape: rectangle
+}
+multimedia_prod_cap: "Multimedia Production Capabilities" {
+  shape: rectangle
+}
+
+// Programmatic & Content Retrofit
+disinfo_misinfo_combat: "Disinformation & Misinformation Combat" {
+  shape: rectangle
+}
+climate_env_reporting: "Climate & Environmental Reporting" {
+  shape: rectangle
+}
+gender_sensitive_report: "Gender-Sensitive Reporting & Inclusion" {
+  shape: rectangle
+}
+audience_engage_local: "Audience Engagement & Localization" {
+  shape: rectangle
+}
+peacebuilding_dialogue: "Peacebuilding & Dialogue Facilitation" {
+  shape: rectangle
+}
+
+// Operational & Strategic Retrofit
+hybrid_work_models: "Hybrid Work Models" {
+  shape: rectangle
+}
+diversified_funding: "Diversified Funding Models" {
+  shape: rectangle
+}
+impact_meas_eval: "Impact Measurement & Evaluation" {
+  shape: rectangle
+}
+staff_dev_wellbeing: "Staff Development & Well-being" {
+  shape: rectangle
+}
+strategic_partnerships: "Strategic Partnerships" {
+  shape: rectangle
+}
+
+// Organizational Culture & Governance Retrofit
+dei: "Diversity, Equity, and Inclusion (DEI)" {
+  shape: rectangle
+}
+agile_management: "Agile Management" {
+  shape: rectangle
+}
+
+// Connections
+Retrofit -> tech_retrofit
+Retrofit -> prog_content_retrofit
+Retrofit -> oper_strat_retrofit
+Retrofit -> org_culture_gov_retrofit
+
+tech_retrofit -> adv_digital_tools
+tech_retrofit -> data_journ_viz
+tech_retrofit -> ai_automation_int
+tech_retrofit -> cybersecurity_enhance
+tech_retrofit -> multimedia_prod_cap
+
+prog_content_retrofit -> disinfo_misinfo_combat
+prog_content_retrofit -> climate_env_reporting
+prog_content_retrofit -> gender_sensitive_report
+prog_content_retrofit -> audience_engage_local
+prog_content_retrofit -> peacebuilding_dialogue
+
+oper_strat_retrofit -> hybrid_work_models
+oper_strat_retrofit -> diversified_funding
+oper_strat_retrofit -> impact_meas_eval
+oper_strat_retrofit -> staff_dev_wellbeing
+oper_strat_retrofit -> strategic_partnerships
+
+org_culture_gov_retrofit -> dei
+org_culture_gov_retrofit -> agile_management
