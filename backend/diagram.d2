@@ -1,31 +1,86 @@
 direction: down
 
-CheckContext: |
-  Check context for
-  'iwpr' retrofit
-shape: rectangle
+RetrofitProcess: {
+  label: "Retrofit Process for ABAP Dictionary Data Elements (DTEL/DTED) in Tables"
+  shape: rectangle
+}
 
-IsInfoAvailable: |
-  Is 'iwpr' info
-  available?
-shape: diamond
+RetrofitProcess -> ScenariosTitle: { label: "Start Retrofit" }
 
-InfoNotAvailable: |
-  Info for 'iwpr'
-  not available
-shape: rectangle
+ScenariosTitle: {
+  label: "Detailed Retrofit Scenarios"
+  shape: rectangle
+}
 
-AvailableProcesses: |
-  Context describes:
-  REPT, IDoc
-shape: rectangle
+ScenariosTitle -> Scenario1.SRC_Start: { label: "Choose Scenario 1" }
+ScenariosTitle -> Scenario2.TGT_Start: { label: "Choose Scenario 2" }
+ScenariosTitle -> Scenario3.MERGE_Start: { label: "Choose Scenario 3" }
 
-RequestDoc: |
-  Request relevant
-  documentation
-shape: rectangle
+Scenario1: {
+  label: "1. Source System Change Only"
+  direction: down
+  SRC_Start: { label: "Start Scenario 1" }
+  SRC1: { label: "Compare Versions\n(Scope TR vs. Previous in Source)" }
+  SRC2: { label: "Fetch Remote Version\n(from Target System)" }
+  SRC3: { label: "Identify Specific Changes\n(e.g., Field Labels, Domain)" }
+  SRC4: { label: "Transport Data Element Changes\n(Source to Target)" }
+  SRC5: { label: "Activate Data Element\nin Target System" }
+  SRC_End: { label: "Scenario 1 Complete" }
 
-CheckContext -> IsInfoAvailable
-IsInfoAvailable -> InfoNotAvailable: No
-InfoNotAvailable -> AvailableProcesses
-AvailableProcesses -> RequestDoc
+  SRC_Start -> SRC1
+  SRC1 -> SRC2
+  SRC2 -> SRC3
+  SRC3 -> SRC4
+  SRC4 -> SRC5
+  SRC5 -> SRC_End
+}
+
+Scenario2: {
+  label: "2. Target System Change Only"
+  direction: down
+  TGT_Start: { label: "Start Scenario 2" }
+  TGT1: { label: "Compare Target Versions\n(Active vs. Previous in Target)" }
+  TGT2: { label: "Is change business-required\nmodification?" shape: diamond }
+  TGT3: { label: "Retain Target-Specific Changes" }
+  TGT4: { label: "Prevent Overwrite\nwith Source Content" }
+  TGT5: { label: "Document Decision" }
+  TGT_End: { label: "Scenario 2 Complete" }
+
+  TGT_Start -> TGT1
+  TGT1 -> TGT2
+  TGT2 -> TGT3: { label: "Yes" }
+  TGT2 -> TGT_No_Retain: { label: "No" }
+  TGT3 -> TGT4
+  TGT4 -> TGT5
+  TGT5 -> TGT_End
+  TGT_No_Retain: { label: "Target Change Not Retained" }
+  TGT_No_Retain -> TGT_End
+}
+
+Scenario3: {
+  label: "3. Both Source and Target System Changes (Merge Scenario)"
+  direction: down
+  MERGE_Start: { label: "Start Scenario 3" }
+  MERGE1: { label: "Compare Source Versions\n(TR vs. Previous)" }
+  MERGE2: { label: "Compare Target Versions\n(Active vs. Previous)" }
+  MERGE3: { label: "Perform Detailed Line-by-Line Comparison\n(incl. Domain, Field Labels)" }
+  MERGE4: { label: "Manually Merge Relevant Changes\ninto Target System" }
+  MERGE5: { label: "Activate Merged Object\nand Document Decisions" }
+  MERGE_End: { label: "Scenario 3 Complete" }
+
+  MERGE_Start -> MERGE1
+  MERGE1 -> MERGE2
+  MERGE2 -> MERGE3
+  MERGE3 -> MERGE4
+  MERGE4 -> MERGE5
+  MERGE5 -> MERGE_End
+}
+
+RetrofitComplete: {
+  label: "Retrofit Process Fully Complete"
+  shape: circle
+}
+
+Scenario1.SRC_End -> RetrofitComplete: { label: "Flow to Completion" }
+Scenario2.TGT_End -> RetrofitComplete: { label: "Flow to Completion" }
+Scenario3.MERGE_End -> RetrofitComplete: { label: "Flow to Completion" }
