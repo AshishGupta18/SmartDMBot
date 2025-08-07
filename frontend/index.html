@@ -1,29 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Smart DMBot</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-</head>
-<body>
-  <div class="widget">
-    <header class="chat-header">
-      <div class="chat-title">
-        <span class="logo">🤖</span>
-        <span class="name">Smart DMBot</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart DMBot</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <div class="widget">
+      <header class="chat-header">
+        <div class="chat-title">
+          <img
+            src="assets/without bg.png"
+            alt="SmartShift DMBot"
+            class="logo-image"
+          />
+        </div>
+        <button class="close-btn" onclick="window.close()">✕</button>
+      </header>
+      <main class="chat-box" id="chat">
+        <div class="placeholder-text" id="chat-placeholder">
+          Hi, How Can I Help you?
+        </div>
+      </main>
+      <div class="input-area">
+        <input type="text" id="question" placeholder="Write a reply..." />
+        <button id="send-btn">➤</button>
+        <!-- <button id="mic-btn">🎤</button> -->
       </div>
-      <button class="close-btn" onclick="window.close()">✕</button>
-    </header>
-    <main class="chat-box" id="chat"></main>
-    <div class="input-area">
-      <input type="text" id="question" placeholder="Write a reply..." />
-      <button id="send-btn">➤</button>
-      <button id="mic-btn">🎤</button>
     </div>
-  </div>
 
-  <script src="renderer.js"></script>
-</body>
+    <script src="renderer.js"></script>
+  </body>
 </html>

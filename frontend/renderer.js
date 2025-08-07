@@ -3,13 +3,39 @@ const questionInput = document.getElementById("question");
 const sendBtn = document.getElementById("send-btn");
 const micBtn = document.getElementById("mic-btn");
 
+// Function to download images
+async function downloadImage(imageUrl, filename) {
+  try {
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error("Error downloading image:", error);
+    alert("Failed to download image. Please try again.");
+  }
+}
+
 async function typeText(element, text, delay = 20) {
   element.innerHTML = "";
-  const words = text.split(" ");
+
+  // First, process the text to convert **text** to <b>text</b>
+  let processedText = text.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+
+  // Split by words but preserve HTML tags
+  const words = processedText.split(/(\s+)/);
+
   for (let i = 0; i < words.length; i++) {
     element.innerHTML += words[i];
-    if (i !== words.length - 1) element.innerHTML += " ";
-    await new Promise((resolve) => setTimeout(resolve, delay));
+    if (i !== words.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
     chat.scrollTop = chat.scrollHeight;
   }
 }
@@ -17,6 +43,10 @@ async function typeText(element, text, delay = 20) {
 async function send() {
   const question = questionInput.value.trim();
   if (!question) return;
+
+  // Hide placeholder if present
+  const placeholder = document.getElementById("chat-placeholder");
+  if (placeholder) placeholder.style.display = "none";
 
   chat.innerHTML += `<div class="user"><b>You:</b> ${question}</div>`;
   questionInput.value = "";
@@ -33,13 +63,43 @@ async function send() {
     await typeText(typingDiv, `🤖 ${res.data.answer}`, 25);
     // If SVG is present, display it below the answer
     if (res.data.svg) {
+      const imageContainer = document.createElement("div");
+      imageContainer.style.marginTop = "12px";
+
       const svgImg = document.createElement("img");
       svgImg.src = `http://127.0.0.1:5000${res.data.svg}`;
       svgImg.alt = "Generated diagram";
       svgImg.style.display = "block";
       svgImg.style.maxWidth = "100%";
-      svgImg.style.marginTop = "12px";
-      typingDiv.appendChild(svgImg);
+      // svgImg.style.marginTop = "12px";
+      // typingDiv.appendChild(svgImg);
+      svgImg.style.cursor = "pointer";
+      svgImg.title = "Click to download";
+
+      // Make image clickable to download
+      svgImg.addEventListener("click", () => {
+        downloadImage(svgImg.src, "diagram.svg");
+      });
+
+      // Create download button
+      const downloadBtn = document.createElement("button");
+      downloadBtn.textContent = "📥 Download Diagram";
+      downloadBtn.style.marginTop = "8px";
+      downloadBtn.style.padding = "6px 12px";
+      downloadBtn.style.backgroundColor = "#1a73e8";
+      downloadBtn.style.color = "white";
+      downloadBtn.style.border = "none";
+      downloadBtn.style.borderRadius = "4px";
+      downloadBtn.style.cursor = "pointer";
+      downloadBtn.style.fontSize = "12px";
+
+      downloadBtn.addEventListener("click", () => {
+        downloadImage(svgImg.src, "diagram.svg");
+      });
+
+      imageContainer.appendChild(svgImg);
+      imageContainer.appendChild(downloadBtn);
+      typingDiv.appendChild(imageContainer);
     }
   } catch (err) {
     typingDiv.innerHTML = "Error connecting to backend.";

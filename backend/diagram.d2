@@ -1,53 +1,83 @@
 direction: down
 
-start_node: Start {
-  shape: circle
-  label: Start
+RetrofitProcess: "Retrofit Process for ENHO Enhancement" {
+    shape: rectangle
 }
 
-step1: AccessIDoc {
-  label: "1. Access IDoc Type for Editing:\n- Open WE30\n- Enter Type/Extension\n- Select Type\n- Click Change"
-  shape: rectangle
+NewExistingDecision: "Is it a New Enhancement Implementation?" {
+    shape: diamond
 }
 
-step2_decision: IsReleased {
-  label: "2. IDoc Released/Locked?"
-  shape: diamond
+ImportTOC: "Import object via Transport of Copies (TOC) to target system" {
+    shape: rectangle
 }
 
-step3: CancelRelease {
-  label: "3. Cancel IDoc Type Release:\n- IDoc Type -> Release -> Cancel Release\n- Confirm Action"
-  shape: rectangle
+PreCheck: "Pre-Check: Verify active version of object in source system matches current Scope version" {
+    shape: rectangle
 }
 
-step4: PerformChanges {
-  label: "4. Perform Structural Changes:\n- Add new segments\n- Modify segments/fields\n- Adjust hierarchies\n- Align with requirements"
-  shape: rectangle
+GoToSE38: "Go to transaction SE38 in target system" {
+    shape: rectangle
 }
 
-step5: SaveMods {
-  label: "5. Save Modifications"
-  shape: rectangle
+ExecuteRSSYSCOMP: "Execute program RSSYSCOMP" {
+    shape: rectangle
+    label: "Execute program RSSYSCOMP\n- Provide RFC Destination\n- Select 'Freely Selected Objects'\n- Enter specific object name(s)"
 }
 
-step6: ReRelease {
-  label: "6. Re-release IDoc Type:\n- IDoc Type -> Release -> Release\n- Confirm Action"
-  shape: rectangle
+ExecuteComparison: "Execute version comparison" {
+    shape: rectangle
 }
 
-end_node: End {
-  shape: circle
-  label: End
+DiagnosisDecision: "Diagnosis Column: 'IDENTICAL'?" {
+    shape: diamond
 }
 
-start_node -> step1
-step1 -> step2_decision
+NoFurtherAction: "No further action required for this object" {
+    shape: rectangle
+}
 
-step2_decision -> step3: Yes (Locked)
-step2_decision -> step4: No (Editable)
+CompareTargetPrevActive: "Compare Target Version with Previous Active Version" {
+    shape: rectangle
+}
 
-step3 -> step4
+LineByLineCompare: "Perform Line-by-Line Version Comparison (Source vs Target)" {
+    shape: rectangle
+}
 
-step4 -> step5
-step5 -> step6
-step6 -> end_node
+ManualMerge: "Manually Merge Relevant Changes (from Source to Target)" {
+    shape: rectangle
+}
+
+ActivateObject: "Activate Merged Object in target system" {
+    shape: rectangle
+}
+
+DocumentChanges: "Document Changes (reasoning, comparison results, verification)" {
+    shape: rectangle
+}
+
+EndProcess: "End of Retrofit Process" {
+    shape: rectangle
+}
+
+RetrofitProcess -> NewExistingDecision
+
+NewExistingDecision -> ImportTOC : "Yes (New)"
+ImportTOC -> EndProcess
+
+NewExistingDecision -> PreCheck : "No (Existing)"
+PreCheck -> GoToSE38
+GoToSE38 -> ExecuteRSSYSCOMP
+ExecuteRSSYSCOMP -> ExecuteComparison
+ExecuteComparison -> DiagnosisDecision
+
+DiagnosisDecision -> NoFurtherAction : "Yes"
+NoFurtherAction -> EndProcess
+
+DiagnosisDecision -> CompareTargetPrevActive : "No ('NOT IDENTICAL') or Subtle Differences"
+CompareTargetPrevActive -> LineByLineCompare
+LineByLineCompare -> ManualMerge
+ManualMerge -> ActivateObject
+ActivateObject -> DocumentChanges
+DocumentChanges -> EndProcess
