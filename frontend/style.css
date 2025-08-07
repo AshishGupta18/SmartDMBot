@@ -1,170 +1,154 @@
 body {
-    margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    height: 100vh;
-    width: 100vw;
-    display: flex;
-    flex-direction: column;
-    color: #fff;
-  }
-  
-  .chat-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    backdrop-filter: blur(12px);
-  }
-  
-
-  
-  .chat-header {
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
-    padding: 20px;
-    text-align: center;
-    font-size: 1.4rem;
-    font-weight: bold;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 0 0 20px 20px;
-    backdrop-filter: blur(8px);
-  }
-
-  .chat-box {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    background: transparent;
-  }
-  
-  .user, .bot {
-    max-width: 75%;
-    padding: 12px 16px;
-    margin-bottom: 12px;
-    border-radius: 18px;
-    line-height: 1.5;
-    word-wrap: break-word;
-    animation: fadeIn 0.3s ease-in;
-    font-size: 0.95rem;
-    backdrop-filter: blur(8px);
-  }
-  
-  .user {
-    align-self: flex-end;
-    background: linear-gradient(135deg, #42a5f5, #478ed1);
-    color: #fff;
-    border-bottom-right-radius: 4px;
-  }
-  
-  .bot {
-    align-self: flex-start;
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff;
-    border-bottom-left-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-  
-  .input-area {
-    display: flex;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px 20px 0 0;
-  }
-  
-  .input-area textarea {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 12px;
-    outline: none;
-    font-size: 1rem;
-    margin-right: 10px;
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff;
-    backdrop-filter: blur(6px);
-    resize: none;
-    min-height: 40px;
-    max-height: 200px;   /* Increased for longer messages */
-    line-height: 1.4;
-    overflow-y: hidden;  /* Removes scrollbar until necessary */
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    transition: all 0.2s ease;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  height: 100vh;
+  width: 100vw;
+  background: #f5f7fa;
+  display: flex;
+  flex-direction: column;
 }
 
-.input-area textarea::placeholder {
-    color: rgba(255, 255, 255, 0.6);
+.widget {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #f5f7fa;
 }
-  
-  .input-area button {
-    background: linear-gradient(135deg, #42a5f5, #478ed1);
-    color: #fff;
-    border: none;
-    padding: 12px 18px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
-  }
-  
-  .input-area button:hover {
-    background: linear-gradient(135deg, #5eb8f7, #5aa0e0);
-    transform: scale(1.05);
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
 
-  .copy-container {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  
-  .copy-text {
-    font-size: 0.8rem;
-    margin-right: 5px;
-    color: #ddd;
-  }
-  
-  .copy-btn {
-    background: rgba(255, 255, 255, 0.15);
-    border: none;
-    color: #fff;
-    font-size: 0.9rem;
-    cursor: pointer;
-    padding: 3px 8px;
-    border-radius: 6px;
-    transition: background 0.3s ease;
-  }
-  
-  .copy-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-  }
-  
-  /* Smooth "Copied!" tooltip */
-  .copied-tooltip {
-    position: fixed;
-    top: 15px;
-    right: 15px;
-    background: #4CAF50;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    animation: fadeInOut 1.5s ease-in-out;
-  }
-  
-  @keyframes fadeInOut {
-    0% { opacity: 0; transform: translateY(-10px); }
-    20% { opacity: 1; transform: translateY(0); }
-    80% { opacity: 1; }
-    100% { opacity: 0; transform: translateY(-10px); }
-  }
+.chat-header {
+  /* background: #1a73e8; */
+  background: #000000;
+  color: white;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-title .logo {
+  font-size: 1.5rem;
+}
+
+.chat-title .name {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.chat-box {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.user, .bot {
+  padding: 12px 16px;
+  border-radius: 14px;
+  line-height: 1.5;
+  max-width: 75%;
+  font-size: 0.95rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.user {
+  align-self: flex-end;
+  background: #1a73e8;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.bot {
+  align-self: flex-start;
+  background: white;
+  color: #333;
+  border-bottom-left-radius: 4px;
+}
+
+.input-area {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #ddd;
+  padding: 12px 16px;
+  background: #ffffff;
+  gap: 10px;
+}
+
+.input-area input {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border-radius: 18px;
+  border: 1px solid #ccc;
+  outline: none;
+}
+
+.input-area button {
+  background: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: background 0.2s;
+}
+
+.input-area button:hover {
+  background: #155ac8;
+}
+.widget {
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.title-bar {
+  height: 40px;
+  background: #007bff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 600;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.window-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.window-controls button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.window-controls button:hover {
+  color: #ffd700;
+}

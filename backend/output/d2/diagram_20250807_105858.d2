@@ -1,0 +1,28 @@
+direction: down
+
+context: "Provided Context: Retrofit Process for Tables" {
+    shape: rectangle
+}
+
+decision: "Does context describe a specific retrofit process for 'tables' (as distinct object type)?" {
+    shape: diamond
+}
+
+no_specific_process: "No specific process for 'tables' as a distinct object type found." {
+    shape: rectangle
+}
+
+contextual_mentions: "Tables mentioned in other capacities: System tables (TADIR, E071), Data Elements within tables/structures." {
+    shape: rectangle
+}
+
+overall_conclusion: "Provided information lacks detail on how to perform a retrofit process on a table itself." {
+    shape: rectangle
+}
+
+context -> decision
+decision -> no_specific_process {
+    label: "No"
+}
+no_specific_process -> contextual_mentions
+contextual_mentions -> overall_conclusion
