@@ -96,13 +96,6 @@ async function send() {
     typingDiv.innerHTML = "";
     await typeText(typingDiv, `🤖 ${res.data.answer}`, 25);
 
-    // Clear any existing images from previous responses
-    const existingImages = typingDiv.querySelectorAll("img");
-    existingImages.forEach((img) => {
-      img.src = "";
-      img.remove();
-    });
-
     // Only try to display image if SVG path is provided
     if (res.data.svg) {
       // Add timestamp to prevent browser caching
@@ -163,15 +156,8 @@ async function send() {
         );
       }
     } else {
-      // Explicitly ensure no image is shown when no SVG is provided
+      // No diagram generated for this response - but don't clear previous images
       console.log("No diagram generated for this response");
-
-      // Clear any existing images from the entire chat
-      const allImages = chat.querySelectorAll("img");
-      allImages.forEach((img) => {
-        img.src = "";
-        img.remove();
-      });
     }
   } catch (err) {
     typingDiv.innerHTML = "Error connecting to backend.";
