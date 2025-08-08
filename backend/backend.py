@@ -35,35 +35,35 @@ TRAIN_DATA_DIR = "train_data"
 CHUNKS_CACHE_PATH = os.path.join(CACHE_DIR, "json_chunks.pkl")
 VECTORSTORE_CACHE_PATH = os.path.join(CACHE_DIR, "json_vectorstore.faiss")
 
-# Function to delete the most recent SVG file only
-def delete_most_recent_svg():
-    """Delete only the most recent SVG file to prevent stale images while retaining chat history"""
-    svg_dir = os.path.join("output", "svg")
-    if os.path.exists(svg_dir):
-        svg_files = glob.glob(os.path.join(svg_dir, "diagram_*.svg"))
-        if svg_files:
-            # Sort files by modification time (newest first)
-            svg_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-            # Delete only the most recent file
-            most_recent_file = svg_files[0]
-            try:
-                os.remove(most_recent_file)
-                print(f"🗑️ Deleted most recent SVG: {most_recent_file}")
-            except Exception as e:
-                print(f"⚠️ Error deleting {most_recent_file}: {e}")
+# # Function to delete the most recent SVG file only
+# def delete_most_recent_svg():
+#     """Delete only the most recent SVG file to prevent stale images while retaining chat history"""
+#     svg_dir = os.path.join("output", "svg")
+#     if os.path.exists(svg_dir):
+#         svg_files = glob.glob(os.path.join(svg_dir, "diagram_*.svg"))
+#         if svg_files:
+#             # Sort files by modification time (newest first)
+#             svg_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+#             # Delete only the most recent file
+#             most_recent_file = svg_files[0]
+#             try:
+#                 os.remove(most_recent_file)
+#                 print(f"🗑️ Deleted most recent SVG: {most_recent_file}")
+#             except Exception as e:
+#                 print(f"⚠️ Error deleting {most_recent_file}: {e}")
 
-# Function to delete all SVG files (keeping for reference)
-def delete_all_svg_files():
-    """Delete all SVG files - use only when needed"""
-    svg_dir = os.path.join("output", "svg")
-    if os.path.exists(svg_dir):
-        svg_files = glob.glob(os.path.join(svg_dir, "diagram_*.svg"))
-        for svg_file in svg_files:
-            try:
-                os.remove(svg_file)
-                print(f"🗑️ Deleted SVG: {svg_file}")
-            except Exception as e:
-                print(f"⚠️ Error deleting {svg_file}: {e}")
+# # Function to delete all SVG files (keeping for reference)
+# def delete_all_svg_files():
+#     """Delete all SVG files - use only when needed"""
+#     svg_dir = os.path.join("output", "svg")
+#     if os.path.exists(svg_dir):
+#         svg_files = glob.glob(os.path.join(svg_dir, "diagram_*.svg"))
+#         for svg_file in svg_files:
+#             try:
+#                 os.remove(svg_file)
+#                 print(f"🗑️ Deleted SVG: {svg_file}")
+#             except Exception as e:
+#                 print(f"⚠️ Error deleting {svg_file}: {e}")
 
 # Function to keep all SVGs (no deletion)
 def keep_all_svgs():
