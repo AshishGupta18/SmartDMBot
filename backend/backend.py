@@ -8,6 +8,7 @@ import pickle
 from dotenv import load_dotenv
 import google.generativeai as genai
 import subprocess
+import glob
 
 from flask import send_from_directory
 
@@ -21,7 +22,6 @@ def serve_svg(filename):
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 model = genai.GenerativeModel("gemini-2.5-flash")
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # --- Configuration ---
 EMBEDDING_MODEL_NAME = "models/embedding-001"
@@ -35,6 +35,18 @@ TRAIN_DATA_DIR = "train_data"
 CHUNKS_CACHE_PATH = os.path.join(CACHE_DIR, "json_chunks.pkl")
 VECTORSTORE_CACHE_PATH = os.path.join(CACHE_DIR, "json_vectorstore.faiss")
 
+# Function to delete previous SVG files
+def delete_previous_svg_files():
+    """Delete all previous SVG files to prevent stale images"""
+    svg_dir = os.path.join("output", "svg")
+    if os.path.exists(svg_dir):
+        svg_files = glob.glob(os.path.join(svg_dir, "diagram_*.svg"))
+        for svg_file in svg_files:
+            try:
+                os.remove(svg_file)
+                print(f"🗑️ Deleted previous SVG: {svg_file}")
+            except Exception as e:
+                print(f"⚠️ Error deleting {svg_file}: {e}")
 
 # --- Transform JSON to Text (optimized for Gemini) ---
 def transform_idoc_json_to_text(json_data, filename=None):
@@ -211,6 +223,9 @@ def ask_question():
     data = request.get_json()
     query = data.get("question", "")
 
+    # Delete previous SVG files to prevent stale images
+    delete_previous_svg_files()
+
     query_embedding = genai.embed_content(
         model=EMBEDDING_MODEL_NAME,
         content=query,
@@ -243,6 +258,8 @@ def ask_question():
 
     final_answer = f"{answer}"
     
+    # Initialize svg_url as None
+    svg_url = None
     
     if best_distance <= DISTANCE_THRESHOLD:
     # Flowchart generation
@@ -256,7 +273,8 @@ def ask_question():
         os.makedirs(output_d2_dir, exist_ok=True)
         os.makedirs(output_svg_dir, exist_ok=True)
 
-        # Timestamp
+        # Generate fresh timestamp for each request
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
         backup_d2_file = os.path.join(output_d2_dir, f"diagram_{timestamp}.d2")
         svg_file = os.path.join(output_svg_dir, f"diagram_{timestamp}.svg")
@@ -295,15 +313,22 @@ def ask_question():
             subprocess.run(["d2", backup_d2_file, svg_file], check=True)
             print(f"✅ SVG generated: {svg_file}")
             os.remove(steps_file_path)
+            # Only set svg_url if SVG was successfully generated
+            svg_url = f"/svg/diagram_{timestamp}.svg"
         except subprocess.CalledProcessError as e:
             print(f"❌ Error rendering D2 diagram: {e}")
+            svg_url = None
 
-    # Make SVG accessible via URL
-    svg_url = f"/svg/diagram_{timestamp}.svg"
-    return jsonify({
-        "answer": final_answer.replace("\n", "<br>"),
-        "svg": svg_url
-    })
+    # Return response with or without SVG
+    response_data = {
+        "answer": final_answer.replace("\n", "<br>")
+    }
+    
+    # Only include svg in response if it was successfully generated
+    if svg_url:
+        response_data["svg"] = svg_url
+    
+    return jsonify(response_data)
 
 
 
