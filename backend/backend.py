@@ -42,6 +42,7 @@ TRAIN_DATA_DIR = "train_data"
 CHUNKS_CACHE_PATH = os.path.join(CACHE_DIR, "json_chunks.pkl")
 VECTORSTORE_CACHE_PATH = os.path.join(CACHE_DIR, "json_vectorstore.faiss")
 
+
 # Function to keep all SVGs (no deletion)
 def keep_all_svgs():
     print("📁 Keeping all SVG files for chat history")
@@ -203,6 +204,7 @@ def get_general_answer(query):
 def ask_question():
     data = request.get_json()
     query = data.get("question", "")
+    # Keep all SVG files - no deletion to preserve chat history
     keep_all_svgs()
     query_embedding = genai.embed_content(
         model=EMBEDDING_MODEL_NAME,
@@ -242,6 +244,7 @@ def ask_question():
         output_svg_dir = os.path.join(os.getcwd(), "output", "svg")
         os.makedirs(output_d2_dir, exist_ok=True)
         os.makedirs(output_svg_dir, exist_ok=True)
+        # Generate fresh timestamp for each request
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_d2_file = os.path.join(output_d2_dir, f"diagram_{timestamp}.d2")
         svg_file = os.path.join(output_svg_dir, f"diagram_{timestamp}.svg")
@@ -271,16 +274,25 @@ def ask_question():
             subprocess.run(["d2", backup_d2_file, svg_file], check=True)
             print(f"✅ SVG generated: {svg_file}")
             os.remove(steps_file_path)
+
+            # Only set svg_url if SVG was successfully generated
             svg_url = f"/svg/diagram_{timestamp}.svg"
         except subprocess.CalledProcessError as e:
             print(f"❌ Error rendering D2 diagram: {e}")
             svg_url = None
+
+
+    # Return response with or without SVG
     response_data = {
         "answer": final_answer.replace("\n", "<br>")
     }
+    
+    # Only include svg in response if it was successfully generated
     if svg_url:
         response_data["svg"] = svg_url
+    
     return jsonify(response_data)
+
 
 # --- Run App ---
 if __name__ == '__main__':
