@@ -1,0 +1,59 @@
+{
+  "object type": "Smartshift Retrofit - Step 2: Retrofit (Code Merges)",
+  "description": {
+    "overview": "Step 2 of the Smartshift Retrofit process involves locking in-scope objects, performing code merges, and completing remediation activities using analysis results from both source and target systems.",
+    "detailed_flow": [
+      "After customer approves the scoping sheet and provides feedback for Customer_Review, Cust_TOC, and Customer_Review TABU cases, a working ToC in the source (ECC) system and a working Workbench TR in the target (S/4) system are requested.",
+      "In-scope objects are locked to the working TR in the target system. Any locking issues must be reported to the customer.",
+      "Simultaneously, a safe-to-import analysis is performed and the ToC is prepared in the source system. Once validated, the customer is requested to import it into the target system.",
+      "After import, the ToC is also locked to the working TR in the target.",
+      "Objects are categorized into SERVICE SCOPE and TOOL SCOPE based on their nature and whether tool results are required.",
+      "SERVICE SCOPE objects are manually retrofitted. TOOL SCOPE objects are handled based on tool results, and merge activities begin once tool results are available.",
+      "After retrofitting all in-scope objects, remediation begins using UC, EPC, HCC, and S4 (ATC) results.",
+      "Fixes are implemented based on the results, completing remediation before proceeding to Step 3."
+    ]
+  },
+  "tcode": "",
+  "tool_used": [
+    "SMART TOOL",
+    "Source System",
+    "Target System",
+    "SCI, ATC, SLIN",
+	"TOOL RESULTS"
+  ],
+  "retrofit_process": {
+    "step": "Retrofit (Code Merges)",
+    "activities": {
+      "1. Request TRs": "After customer approval of scoping and related documents, request working ToC in ECC and a Workbench TR in S/4HANA.",
+      "2. Lock objects": "Lock in-scope objects in the target system. Report any locking conflicts to the customer.",
+      "3. Safe to import & ToC preparation": "Perform safe-to-import analysis and prepare ToC in the ECC system.",
+      "4. ToC import & locking": "Once validated, have the customer import the ToC to the target system and lock it to the working TR.",
+      "5. Object categorization": "Split objects into SERVICE SCOPE (manual) and TOOL SCOPE (tool-driven).",
+      "6. Retrofit execution": "Start retrofitting SERVICE SCOPE objects. Begin TOOL SCOPE merging once tool results are received.",
+      "7. Remediation analysis": "Run UC, EPC, HCC, and ATC results to identify post-merge issues.",
+      "8. Fix implementation": "Analyze the results and apply required fixes as part of remediation."
+    }
+  },
+  "comparison notes": {
+    "context": "This step ensures code consistency between ECC and S/4HANA systems while retaining target customizations. Proper classification and sequencing of object handling are crucial to successful retrofit and remediation."
+  },
+  "common_errors": [
+    "Locking conflicts on IN-scope objects in the target system",
+    "Incorrect or incomplete ToC preparation",
+    "Delays in customer importing ToC to target system",
+    "Overlooked fixes during remediation"
+  ],
+  "best_practices": [
+    "Ensure timely coordination with customer for TRs and ToC",
+    "Always validate ToC before requesting import",
+    "Clearly follow object categorization to avoid confusion",
+    "Begin SERVICE SCOPE retrofitting early while waiting for tool results",
+    "Run and analyze all remediation fixes thoroughly before closing the stage"
+  ],
+  "chatbot_responses": {
+    "what is step 2 in retrofit?": "Step 2 is the actual 'Retrofit' stage where in-scope objects are locked, merged, and remediated based on tool and manual processes.",
+    "what are SERVICE and TOOL scope objects?": "SERVICE SCOPE objects are manually retrofitted (e.g., TABL, DOMA, FORM), while TOOL SCOPE objects (e.g., PROG, FUNC, CLAS) require tool-based merge and analysis.",
+    "how is remediation done?": "Remediation is performed by running UC, EPC, HCC, and S4 (ATC) tools and applying fixes to the merged code to ensure stability.",
+    "what happens if object locking fails?": "Locking conflicts must be reported back to the customer immediately for resolution before proceeding."
+  }
+}

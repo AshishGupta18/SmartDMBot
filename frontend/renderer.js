@@ -3,6 +3,7 @@ const questionInput = document.getElementById("question");
 const sendBtn = document.getElementById("send-btn");
 const micBtn = document.getElementById("mic-btn");
 
+
 // Function to download images
 async function downloadImage(imageUrl, filename) {
   try {

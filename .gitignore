@@ -17,3 +17,13 @@ build/
 
 # Electron build
 *.asar
+
+# backend exe
+backend/dist/
+backend/MyBackendApp.spec
+
+# frontend exe
+frontend/release-builds
+frontend/backend-bin/cache
+frontend/backend-bin/output
+frontend/backend-bin/MyBackendApp.exe

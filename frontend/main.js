@@ -1,4 +1,8 @@
 const { app, BrowserWindow, screen } = require('electron');
+const path = require('path');
+const { spawn } = require('child_process');
+
+let backendProcess = null;
 
 function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
@@ -15,14 +19,38 @@ function createWindow() {
     resizable: true,
     minimizable: true,
     maximizable: true,
-    frame: false, // We'll build our own header bar with minimize/close
+    frame: false,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false,
-    },
+      contextIsolation: false
+    }
   });
 
   win.loadFile('index.html');
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  // Backend EXE location (inside packaged app)
+  const exePath = path.join(__dirname, 'backend-bin', 'MyBackendApp.exe');
+
+  backendProcess = spawn(exePath, [], { shell: true });
+
+  backendProcess.stdout.on('data', (data) => {
+    console.log(`[Backend]: ${data}`);
+  });
+
+  backendProcess.stderr.on('data', (data) => {
+    console.error(`[Backend ERROR]: ${data}`);
+  });
+
+  backendProcess.on('close', (code) => {
+    console.log(`Backend process closed with code ${code}`);
+  });
+
+  createWindow();
+});
+
+app.on('window-all-closed', () => {
+  if (backendProcess) backendProcess.kill();
+  app.quit();
+});
