@@ -1,0 +1,55 @@
+{
+  "object type": "Smartshift Retrofit - Step 1: Getting TR List",
+  "description": {
+    "overview": "Step 1 of the Smartshift Retrofit process involves receiving, validating, and scoping transport requests (TRs) shared by the customer for retrofit.",
+    "detailed_flow": [
+      "Customer shares a list of TRs that were moved to their source (ECC) production system during a timeframe defined by them.",
+      "Each shared TR is validated to ensure it exists in the ECC production system.",
+      "Once validation is complete, scoping preparation begins. Simultaneously, extracts are triggered for in-scope namespaces in both the ECC (source) and S/4HANA (target) systems.",
+      "After scoping is reviewed internally, it is sent to the customer for approval, along with Customer_Review, Cust_TOC, and Customer_Review TABU case details.",
+      "Completed extracts and finalized scoping are uploaded to the designated Google Drive folder and shared with the Retrofit Analyst team to initiate tool-based analysis.",
+      "After receiving customer approval and feedback, the process proceeds to Step 2: Retrofit."
+    ]
+  },
+  "tcode": "",
+  "tool_used": [
+    "Smartshift Extractor Utility",
+    "Google Drive",
+    "Source System",
+    "Target System",
+	"Scoping Utility"
+  ],
+  "retrofit_process": {
+    "step": "Getting TR list",
+    "activities": {
+      "1. Receive TR list": "Customer provides the list of TRs moved to ECC production during the defined timeframe.",
+      "2. Validate TRs": "Verify that each TR in the list exists in the ECC production system.",
+      "3. Prepare scoping and trigger extracts": "Start scoping for in-scope objects and simultaneously trigger extracts in both ECC and S/4 systems.",
+      "4. Review and send for approval": "Scoping is reviewed and shared with the customer along with required documents: Customer_Review, Cust_TOC, and Customer_Review TABU.",
+      "5. Upload and share with analyst team": "All validated and approved artifacts are uploaded to Google Drive and shared with the Retrofit Analyst team.",
+      "6. Proceed to next phase": "After customer feedback and approval, proceed to the next stage: Retrofit."
+    }
+  },
+  "comparison notes": {
+    "context": "Thorough validation and preparation in this step are critical to avoid issues in later retrofit stages. Ensuring only in-scope and valid TRs move forward helps streamline the entire retrofit cycle."
+  },
+  "common_errors": [
+    "TRs not found in ECC production system",
+    "Incorrect or incomplete TR list shared by customer",
+    "Delayed customer feedback on scoping",
+    "Incorrect namespace extraction"
+  ],
+  "best_practices": [
+    "Cross-check each TR in ECC production system before proceeding",
+    "Align with customer on expected timeframe and TR scope",
+    "Maintain a standardized scoping and extract process",
+    "Share scoping documents clearly with traceable versions",
+    "Ensure timely communication with the Retrofit Analyst team"
+  ],
+  "chatbot_responses": {
+    "what is step 1 in retrofit process?": "Step 1 is 'Getting TR list', where customer-shared transport requests are validated, scoped, and prepared for analysis before proceeding to the retrofit phase.",
+    "how do you validate TRs in retrofit?": "By checking that each TR shared by the customer exists in the ECC production system.",
+    "what documents are shared with customer during scoping?": "Customer_Review, Cust_TOC, and Customer_Review TABU documents are shared for approval and feedback.",
+    "what happens after scoping is approved?": "After approval, the extracted files and scoping are uploaded to Google Drive and shared with the Retrofit Analyst team to continue to Step 2."
+  }
+}

@@ -3,6 +3,7 @@ const questionInput = document.getElementById("question");
 const sendBtn = document.getElementById("send-btn");
 const micBtn = document.getElementById("mic-btn");
 
+
 // Function to download images
 async function downloadImage(imageUrl, filename) {
   try {
@@ -19,6 +20,40 @@ async function downloadImage(imageUrl, filename) {
   } catch (error) {
     console.error("Error downloading image:", error);
     alert("Failed to download image. Please try again.");
+  }
+}
+
+// Function to check if image loads successfully
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      // Additional validation: check if image has actual dimensions
+      if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+        reject(new Error("Image has no dimensions"));
+      } else {
+        resolve(img);
+      }
+    };
+    img.onerror = () => reject(new Error("Image failed to load"));
+    img.src = src;
+  });
+}
+
+// Function to validate if image URL actually returns an image
+async function validateImageUrl(url) {
+  try {
+    const response = await fetch(url, { method: "HEAD" });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("image/")) {
+      throw new Error("URL does not return an image");
+    }
+    return true;
+  } catch (error) {
+    throw new Error(`Image validation failed: ${error.message}`);
   }
 }
 
@@ -58,49 +93,72 @@ async function send() {
   chat.scrollTop = chat.scrollHeight;
 
   try {
-    const BASE_URL = "http://localhost:5000";
-    const res = await axios.post(`${BASE_URL}/ask`, { question });
+    const res = await axios.post("http://127.0.0.1:5000/ask", { question });
     typingDiv.innerHTML = "";
     await typeText(typingDiv, `🤖 ${res.data.answer}`, 25);
-    // If SVG is present, display it below the answer
+
+    // Only try to display image if SVG path is provided
     if (res.data.svg) {
-      const imageContainer = document.createElement("div");
-      imageContainer.style.marginTop = "12px";
+      // Add timestamp to prevent browser caching
+      const timestamp = new Date().getTime();
+      const randomId = Math.random().toString(36).substring(7);
+      const imageUrl = `http://127.0.0.1:5000${res.data.svg}?t=${timestamp}&r=${randomId}`;
 
-      const svgImg = document.createElement("img");
-      svgImg.src = `${BASE_URL}${res.data.svg}`;
-      svgImg.alt = "Generated diagram";
-      svgImg.style.display = "block";
-      svgImg.style.maxWidth = "100%";
-      // svgImg.style.marginTop = "12px";
-      // typingDiv.appendChild(svgImg);
-      svgImg.style.cursor = "pointer";
-      svgImg.title = "Click to download";
+      try {
+        // First validate that the URL actually returns an image
+        await validateImageUrl(imageUrl);
 
-      // Make image clickable to download
-      svgImg.addEventListener("click", () => {
-        downloadImage(svgImg.src, "diagram.svg");
-      });
+        // Then try to load the image
+        await loadImage(imageUrl);
 
-      // Create download button
-      const downloadBtn = document.createElement("button");
-      downloadBtn.textContent = "📥 Download Diagram";
-      downloadBtn.style.marginTop = "8px";
-      downloadBtn.style.padding = "6px 12px";
-      downloadBtn.style.backgroundColor = "#1a73e8";
-      downloadBtn.style.color = "white";
-      downloadBtn.style.border = "none";
-      downloadBtn.style.borderRadius = "4px";
-      downloadBtn.style.cursor = "pointer";
-      downloadBtn.style.fontSize = "12px";
+        // If both validations pass, display it with download option
+        const imageContainer = document.createElement("div");
+        imageContainer.style.marginTop = "12px";
 
-      downloadBtn.addEventListener("click", () => {
-        downloadImage(svgImg.src, "diagram.svg");
-      });
+        const svgImg = document.createElement("img");
+        svgImg.src = imageUrl;
+        svgImg.alt = "Generated diagram";
+        svgImg.style.display = "block";
+        svgImg.style.maxWidth = "100%";
+        svgImg.style.cursor = "pointer";
+        svgImg.title = "Click to download";
 
-      imageContainer.appendChild(svgImg);
-      imageContainer.appendChild(downloadBtn);
-      typingDiv.appendChild(imageContainer);
+        // Make image clickable to download
+        svgImg.addEventListener("click", () => {
+          downloadImage(svgImg.src, "diagram.svg");
+        });
+
+        // Create download button
+        const downloadBtn = document.createElement("button");
+        downloadBtn.textContent = "📥 Download Diagram";
+        downloadBtn.style.marginTop = "8px";
+        downloadBtn.style.padding = "6px 12px";
+        downloadBtn.style.backgroundColor = "#1a73e8";
+        downloadBtn.style.color = "white";
+        downloadBtn.style.border = "none";
+        downloadBtn.style.borderRadius = "4px";
+        downloadBtn.style.cursor = "pointer";
+        downloadBtn.style.fontSize = "12px";
+
+        downloadBtn.addEventListener("click", () => {
+          downloadImage(svgImg.src, "diagram.svg");
+        });
+
+        imageContainer.appendChild(svgImg);
+        imageContainer.appendChild(downloadBtn);
+        typingDiv.appendChild(imageContainer);
+
+        console.log("Image successfully loaded and displayed");
+      } catch (imageError) {
+        // If image fails to load, don't display anything
+        console.log(
+          "Image not available or failed to load:",
+          imageError.message
+        );
+      }
+    } else {
+      // No diagram generated for this response - but don't clear previous images
+      console.log("No diagram generated for this response");
     }
   } catch (err) {
     typingDiv.innerHTML = "Error connecting to backend.";

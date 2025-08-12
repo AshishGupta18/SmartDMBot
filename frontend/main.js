@@ -2,7 +2,7 @@ const { app, BrowserWindow, screen } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 
-let backendProcess;
+let backendProcess = null;
 
 function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
@@ -22,41 +22,35 @@ function createWindow() {
     frame: false,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false,
-    },
+      contextIsolation: false
+    }
   });
 
   win.loadFile('index.html');
 }
 
-function startBackend() {
-  // Detect correct path depending on development vs production
-  const backendExePath = app.isPackaged
-  ? path.join(process.resourcesPath, 'backend', 'backend.exe')
-  : path.join(__dirname, '../backend/dist/backend/backend.exe');
+app.whenReady().then(() => {
+  // Backend EXE location (inside packaged app)
+  const exePath = path.join(__dirname, 'backend-bin', 'MyBackendApp.exe');
 
-  console.log(`Starting backend from: ${backendExePath}`);
+  backendProcess = spawn(exePath, [], { shell: true });
 
-  backendProcess = spawn(backendExePath, [], {
-    stdio: 'inherit',
-    shell: true,
+  backendProcess.stdout.on('data', (data) => {
+    console.log(`[Backend]: ${data}`);
   });
 
-  backendProcess.on('error', (err) => {
-    console.error('Failed to start backend:', err);
+  backendProcess.stderr.on('data', (data) => {
+    console.error(`[Backend ERROR]: ${data}`);
   });
 
   backendProcess.on('close', (code) => {
-    console.log(`Backend exited with code ${code}`);
+    console.log(`Backend process closed with code ${code}`);
   });
-}
 
-app.whenReady().then(() => {
-  startBackend();
   createWindow();
 });
 
 app.on('window-all-closed', () => {
-  if (backendProcess) backendProcess.kill(); // kill backend when window closes
-  if (process.platform !== 'darwin') app.quit();
+  if (backendProcess) backendProcess.kill();
+  app.quit();
 });

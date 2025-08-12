@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import os
+import sys
 import json
 import numpy as np
 from datetime import datetime
@@ -8,32 +9,26 @@ import pickle
 from dotenv import load_dotenv
 import google.generativeai as genai
 import subprocess
-import sys
+import glob
 
-from flask import send_from_directory
+# === PyInstaller resource-path helper ===
+def resource_path(relative_path):
+    """Get absolute path to resource for dev and PyInstaller."""
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
 
 app = Flask(__name__)
 
 @app.route('/svg/<filename>')
 def serve_svg(filename):
-    return send_from_directory('output/svg', filename)
+    # Output SVGs go in a runtime-created folder
+    svg_dir = os.path.join(os.getcwd(), "output", "svg")
+    return send_from_directory(svg_dir, filename)
 
-# --- Load environment variables ---
-load_dotenv()
+# --- Load environment variables from bundled .env ---
+load_dotenv(resource_path(".env"))
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 model = genai.GenerativeModel("gemini-2.5-flash")
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-
-
-def resource_path(relative_path):
-    """Get absolute path to resource, works for dev and PyInstaller .exe"""
-    if getattr(sys, 'frozen', False):
-        base_path = sys._MEIPASS  # PyInstaller sets this
-    else:
-        base_path = os.path.abspath(".")
-    return os.path.join(base_path, relative_path)
-
 
 # --- Configuration ---
 EMBEDDING_MODEL_NAME = "models/embedding-001"
@@ -43,24 +38,24 @@ CHUNK_OVERLAP = 200
 TOP_K = 5
 DISTANCE_THRESHOLD = 0.70
 CACHE_DIR = "cache"
-TRAIN_DATA_DIR = resource_path("train_data")
+TRAIN_DATA_DIR = "train_data"
 CHUNKS_CACHE_PATH = os.path.join(CACHE_DIR, "json_chunks.pkl")
 VECTORSTORE_CACHE_PATH = os.path.join(CACHE_DIR, "json_vectorstore.faiss")
 
+# Function to keep all SVGs (no deletion)
+def keep_all_svgs():
+    print("📁 Keeping all SVG files for chat history")
 
 # --- Transform JSON to Text (optimized for Gemini) ---
 def transform_idoc_json_to_text(json_data, filename=None):
     lines = []
-
     if filename:
         base_title = os.path.splitext(filename)[0].replace("_", " ").strip()
         lines.append(f"--- Source: {base_title} ---")
         lines.append(f"{base_title} Retrofit Guide\n")
-
     if "object type" in json_data:
         lines.append(f"Object Type: {json_data['object type']}")
         lines.append("")
-
     if "description" in json_data:
         desc = json_data["description"]
         lines.append("Description:")
@@ -75,17 +70,14 @@ def transform_idoc_json_to_text(json_data, filename=None):
         else:
             lines.append(f"  {desc}")
         lines.append("")
-
     if "tcode" in json_data:
         lines.append(f"TCode: {json_data['tcode']}")
         lines.append("")
-
     if "tool_used" in json_data:
         lines.append("Tools Used:")
         for tool in json_data["tool_used"]:
             lines.append(f"- {tool}")
         lines.append("")
-
     if "retrofit_process" in json_data:
         lines.append("Retrofit Process:")
         if isinstance(json_data["retrofit_process"], dict):
@@ -94,7 +86,6 @@ def transform_idoc_json_to_text(json_data, filename=None):
         else:
             lines.append(f"  {json_data['retrofit_process']}")
         lines.append("")
-
     if "comparison notes" in json_data:
         lines.append("Comparison Notes:")
         if isinstance(json_data["comparison notes"], dict):
@@ -103,19 +94,16 @@ def transform_idoc_json_to_text(json_data, filename=None):
         else:
             lines.append(f"  {json_data['comparison notes']}")
         lines.append("")
-
     if "common_errors" in json_data:
         lines.append("Common Errors:")
         for err in json_data["common_errors"]:
             lines.append(f"- {err}")
         lines.append("")
-
     if "best_practices" in json_data:
         lines.append("Best Practices:")
         for practice in json_data["best_practices"]:
             lines.append(f"- {practice}")
         lines.append("")
-
     if "chatbot_responses" in json_data:
         lines.append("Chatbot Responses:")
         for k, v in json_data["chatbot_responses"].items():
@@ -130,7 +118,6 @@ def transform_idoc_json_to_text(json_data, filename=None):
             else:
                 lines.append(f"  {v}")
         lines.append("")
-
     return "\n".join(lines)
 
 # --- Load and transform all JSON files into text ---
@@ -164,16 +151,14 @@ def get_text_chunks(text):
 def setup_chatbot():
     os.makedirs(CACHE_DIR, exist_ok=True)
     genai.configure(api_key=GEMINI_API_KEY)
-
     if os.path.exists(CHUNKS_CACHE_PATH) and os.path.exists(VECTORSTORE_CACHE_PATH):
         with open(CHUNKS_CACHE_PATH, 'rb') as f:
             text_chunks = pickle.load(f)
         vectorstore = faiss.read_index(VECTORSTORE_CACHE_PATH)
         return vectorstore, text_chunks
-
-    raw_text = load_text_from_json_folder(TRAIN_DATA_DIR)
+    # Use resource_path for bundled train_data
+    raw_text = load_text_from_json_folder(resource_path(TRAIN_DATA_DIR))
     text_chunks = get_text_chunks(raw_text)
-
     embeddings = [
         genai.embed_content(
             model=EMBEDDING_MODEL_NAME,
@@ -182,18 +167,14 @@ def setup_chatbot():
         )['embedding'] for chunk in text_chunks
     ]
     embeddings_np = np.array(embeddings, dtype='float32')
-
     dimension = embeddings_np.shape[1]
     index = faiss.IndexFlatL2(dimension)
     index.add(embeddings_np)
-
     with open(CHUNKS_CACHE_PATH, 'wb') as f:
         pickle.dump(text_chunks, f)
     faiss.write_index(index, VECTORSTORE_CACHE_PATH)
-
     for i, chunk in enumerate(text_chunks[:5]):
         print(f"Chunk {i} preview:\n{chunk[:300]}\n---\n")
-
     return index, text_chunks
 
 vectorstore, text_chunks = setup_chatbot()
@@ -207,14 +188,14 @@ Answer based only on this context:
 ---
 Question: {query}
 Answer:"""
-    model = genai.GenerativeModel(GENERATIVE_MODEL_NAME)
-    response = model.generate_content(prompt)
+    model_instance = genai.GenerativeModel(GENERATIVE_MODEL_NAME)
+    response = model_instance.generate_content(prompt)
     return response.text
 
 def get_general_answer(query):
     prompt = f"Answer the following question: {query}"
-    model = genai.GenerativeModel(GENERATIVE_MODEL_NAME)
-    response = model.generate_content(prompt)
+    model_instance = genai.GenerativeModel(GENERATIVE_MODEL_NAME)
+    response = model_instance.generate_content(prompt)
     return response.text
 
 # --- API Endpoint ---
@@ -222,17 +203,15 @@ def get_general_answer(query):
 def ask_question():
     data = request.get_json()
     query = data.get("question", "")
-
+    keep_all_svgs()
     query_embedding = genai.embed_content(
         model=EMBEDDING_MODEL_NAME,
         content=query,
         task_type="retrieval_query"
     )['embedding']
     query_embedding = np.array([query_embedding], dtype='float32')
-
     distances, indices = vectorstore.search(query_embedding, k=TOP_K)
     best_distance = distances[0][0]
-
     if best_distance > DISTANCE_THRESHOLD:
         source = "🔍 *Answer generated by Gemini (no matching training data)*"
         answer = get_general_answer(query)
@@ -241,43 +220,33 @@ def ask_question():
         context = "\n---\n".join(retrieved_chunks)
         source = "📚 *Answer based on your training data (train_data)*"
         answer = get_contextual_answer(query, context)
-        # ✅ Post-process: reformat the output using Gemini again
         reformat_prompt = f"""
-                    Format the following answer into a structured and readable format:
-        - Use bullet points or numbered steps
-        - Use bold for headers if needed*
-        - Maintain spacing for readability
-        Answer:
-        {answer}
-        """
+            Format the following answer into a structured and readable format:
+    - Use bullet points or numbered steps
+    - Use bold for headers if needed*
+    - Maintain spacing for readability
+    Answer:
+    {answer}
+    """
         structured_response = get_general_answer(reformat_prompt)
         answer = structured_response
-
     final_answer = f"{answer}"
-    
-    
+    # Initialize svg_url as None
+    svg_url = None
     if best_distance <= DISTANCE_THRESHOLD:
-    # Flowchart generation
         steps_file_path = "steps.txt"
         with open(steps_file_path, "w", encoding="utf-8") as f:
             f.write(answer)
-
-        # Create separate folders
-        output_d2_dir = os.path.join("output", "d2")
-        output_svg_dir = os.path.join("output", "svg")
+        # Output folders in working directory (not bundled)
+        output_d2_dir = os.path.join(os.getcwd(), "output", "d2")
+        output_svg_dir = os.path.join(os.getcwd(), "output", "svg")
         os.makedirs(output_d2_dir, exist_ok=True)
         os.makedirs(output_svg_dir, exist_ok=True)
-
-        # Timestamp
-        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_d2_file = os.path.join(output_d2_dir, f"diagram_{timestamp}.d2")
         svg_file = os.path.join(output_svg_dir, f"diagram_{timestamp}.svg")
-
-        # Read steps
         with open(steps_file_path, "r", encoding="utf-8") as f:
             steps = f.read()
-
-        # Gemini prompt
         prompt = f"""
         You are a developer assistant. Convert the following algorithm steps into a D2 flowchart.
         Use correct syntax that will render without error in the D2 CLI.
@@ -292,35 +261,27 @@ def ask_question():
         Steps:
         {steps}
         """
-
         print("⏳ Generating D2 diagram with Gemini...")
         response = model.generate_content(prompt)
         d2_code = response.text.strip()
-
-        # Save D2 to timestamped file (only)
         with open(backup_d2_file, "w", encoding="utf-8") as f:
             f.write(d2_code)
         print(f"🗂️  D2 saved: {backup_d2_file}")
-
-        # Render from timestamped file
         try:
             subprocess.run(["d2", backup_d2_file, svg_file], check=True)
             print(f"✅ SVG generated: {svg_file}")
             os.remove(steps_file_path)
+            svg_url = f"/svg/diagram_{timestamp}.svg"
         except subprocess.CalledProcessError as e:
             print(f"❌ Error rendering D2 diagram: {e}")
-
-    # Make SVG accessible via URL
-    svg_url = f"/svg/diagram_{timestamp}.svg"
-    return jsonify({
-        "answer": final_answer.replace("\n", "<br>"),
-        "svg": svg_url
-    })
-
-
-
-
+            svg_url = None
+    response_data = {
+        "answer": final_answer.replace("\n", "<br>")
+    }
+    if svg_url:
+        response_data["svg"] = svg_url
+    return jsonify(response_data)
 
 # --- Run App ---
 if __name__ == '__main__':
-    app.run(host="127.0.0.1",port=5000, debug=True)
+    app.run(port=5000, debug=True)
