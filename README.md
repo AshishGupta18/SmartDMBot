@@ -27,10 +27,14 @@ note - add .env file in backend
    For frontend exe :
    'npm run dist'
 
-3. Enjoy your chatbot.
+3. Enjoy your chatbot
+   
    -cd - SmartDMBot\frontend\backend-bin.
+   
    -copy MyAppBackendApp.exe from  ..SmartDMBot\backend\dist to  ..SmartDMBot\frontend\backend-bin.
+   
    -In ..SmartDMBot\frontend\backend-bin run '.\MyBackendApp.exe'. wait for starting backend.
+   
    -Go to file ..SmartDMBot\frontend\release-builds install "SmartDMBot Setup 1.0.0.exe".
 
    You can enjoy smartDMbot 🥳.
