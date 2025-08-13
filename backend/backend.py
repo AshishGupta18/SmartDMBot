@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 import subprocess
 import glob
+import re
 
 # === PyInstaller resource-path helper ===
 def resource_path(relative_path):
@@ -24,6 +25,158 @@ def serve_svg(filename):
     # Output SVGs go in a runtime-created folder
     svg_dir = os.path.join(os.getcwd(), "output", "svg")
     return send_from_directory(svg_dir, filename)
+
+# New endpoint to serve images from IMAGES folder
+@app.route('/images/<path:filename>')
+def serve_image(filename):
+    """Serve images from the IMAGES folder"""
+    images_dir = resource_path("IMAGES")
+    return send_from_directory(images_dir, filename)
+
+# New endpoint to get all available images
+@app.route('/api/images', methods=['GET'])
+def get_all_images():
+    """Get list of all available images organized by category"""
+    images_dir = resource_path("IMAGES")
+    images_data = {}
+    
+    try:
+        for category in os.listdir(images_dir):
+            category_path = os.path.join(images_dir, category)
+            if os.path.isdir(category_path):
+                images_data[category] = []
+                for image_file in os.listdir(category_path):
+                    if image_file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+                        images_data[category].append({
+                            'filename': image_file,
+                            'path': f'/images/{category}/{image_file}',
+                            'category': category
+                        })
+    except Exception as e:
+        return jsonify({'error': f'Error reading images: {str(e)}'}), 500
+    
+    return jsonify(images_data)
+
+# New endpoint to search for relevant images based on query
+@app.route('/api/search-images', methods=['POST'])
+def search_images():
+    """Search for relevant images based on user query"""
+    data = request.get_json()
+    query = data.get("query", "").lower()
+    
+    if not query:
+        return jsonify({'error': 'Query parameter is required'}), 400
+    
+    images_dir = resource_path("IMAGES")
+    relevant_images = []
+    
+    try:
+        # Define search keywords for each category
+        category_keywords = {
+            'ENHO': ['enhancement', 'enho'],
+            'IDOC & IEXT': ['idoc', 'iext', 'interface', 'document'],
+            'INTF': ['interface', 'intf'],
+            'REPT': ['report', 'rept'],
+            'IWPR': ['iwpr', 'workflow'],
+            'R3TR_PROG': ['program', 'r3tr', 'prog'],
+            'REPS': ['reps'],
+            'TABL_TABD_TABT': ['table', 'tabl', 'tabd', 'tabt'],
+            'TABU': ['tabu'],
+            'DOMA_DOMD': ['domain', 'doma', 'domd'],
+            'DTEL_DTED': ['data element', 'dtel', 'dted']
+        }
+        
+        print(f"🔍 Searching for images related to query: '{query}'")
+        print(f"📁 Images directory: {images_dir}")
+        print(f"🎯 Checking {len(category_keywords)} categories for keyword matches...")
+        
+        # Search through categories for relevant images
+        for category, keywords in category_keywords.items():
+            category_path = os.path.join(images_dir, category)
+            if os.path.exists(category_path):
+                # Check if query matches category keywords
+                if any(keyword in query for keyword in keywords):
+                    print(f"✅ Category '{category}' matched! Keywords: {[k for k in keywords if k in query]}")
+                    # Get all images from this category
+                    for image_file in os.listdir(category_path):
+                        if image_file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+                            relevant_images.append({
+                                'filename': image_file,
+                                'path': f'/images/{category}/{image_file}',
+                                'category': category,
+                                'relevance_score': 1.0
+                            })
+                            print(f"   📸 Added image: {category}/{image_file}")
+                else:
+                    print(f"❌ Category '{category}' - no keyword match")
+        
+        # If no category matches, try to find images with filename matching
+        if not relevant_images:
+            print("🔍 No category matches found, trying filename matching...")
+            for category in os.listdir(images_dir):
+                category_path = os.path.join(images_dir, category)
+                if os.path.isdir(category_path):
+                    for image_file in os.listdir(category_path):
+                        if image_file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+                            # Check if filename contains query terms
+                            filename_lower = image_file.lower()
+                            if query in filename_lower or any(word in filename_lower for word in query.split()):
+                                relevant_images.append({
+                                    'filename': image_file,
+                                    'path': f'/images/{category}/{image_file}',
+                                    'category': category,
+                                    'relevance_score': 0.8
+                                })
+                                print(f"📸 Filename match: {category}/{image_file}")
+        
+        # Sort by relevance score
+        relevant_images.sort(key=lambda x: x['relevance_score'], reverse=True)
+        
+        print(f"🎯 Total relevant images found: {len(relevant_images)}")
+        if relevant_images:
+            print("📋 Selected images:")
+            for i, img in enumerate(relevant_images, 1):
+                print(f"   {i}. {img['category']}/{img['filename']} -> {img['path']} (score: {img['relevance_score']})")
+        else:
+            print("⚠️ No images found!")
+        
+        return jsonify({
+            'query': query,
+            'images': relevant_images,
+            'total_found': len(relevant_images)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error searching images: {str(e)}'}), 500
+
+# New endpoint to get images by category
+@app.route('/api/images/<category>', methods=['GET'])
+def get_images_by_category(category):
+    """Get all images from a specific category"""
+    images_dir = resource_path("IMAGES")
+    category_path = os.path.join(images_dir, category)
+    
+    if not os.path.exists(category_path) or not os.path.isdir(category_path):
+        return jsonify({'error': f'Category {category} not found'}), 404
+    
+    try:
+        images = []
+        for image_file in os.listdir(category_path):
+            if image_file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+                images.append({
+                    'filename': image_file,
+                    'path': f'/images/{category}/{image_file}',
+                    'category': category
+                })
+        
+        return jsonify({
+            'category': category,
+            'images': images,
+            'total': len(images)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error reading category {category}: {str(e)}'}), 500
 
 # --- Load environment variables from bundled .env ---
 load_dotenv(resource_path(".env"))
@@ -231,9 +384,74 @@ def ask_question():
         structured_response = get_general_answer(reformat_prompt)
         answer = structured_response
     final_answer = f"{answer}"
-    # Initialize svg_url as None
+    
+    # Initialize svg_url and relevant_images as None
     svg_url = None
+    relevant_images = []
+    
     if best_distance <= DISTANCE_THRESHOLD:
+                # Simple image search: if folder name keywords match, show all images from that folder
+        print(f"✅ Good training data match found (distance: {best_distance:.3f} <= {DISTANCE_THRESHOLD}), searching for relevant images...")
+        try:
+            images_dir = resource_path("IMAGES")
+            query_lower = query.lower()
+            
+            print(f"🔍 Searching for images related to query: '{query}'")
+            print(f"📁 Images directory: {images_dir}")
+            
+            # Simple folder name keywords
+            folder_keywords = {
+                'ENHO': ['enhancement','enho'],
+                'IDOC & IEXT': ['idoc', 'iext', 'interface'],
+                'INTF': ['interface', 'intf'],
+                'REPT': ['report', 'rept'],
+                'IWPR': ['iwpr', 'workflow'],
+                'R3TR_PROG': ['program', 'r3tr', 'prog'],
+                'REPS': ['reps' ],
+                'TABL_TABD_TABT': ['table', 'tabl', 'tabd', 'tabt'],
+                'TABU': ['tabu'],
+                'DOMA_DOMD': ['domain', 'doma', 'domd'],
+                'DTEL_DTED': ['data element', 'dtel', 'dted']
+            }
+            
+            # Check each folder for keyword matches
+            for folder_name, keywords in folder_keywords.items():
+                folder_path = os.path.join(images_dir, folder_name)
+                if os.path.exists(folder_path):
+                    print(f"🔍 Checking folder '{folder_name}' with keywords: {keywords}")
+                    print(f"🔍 Query: '{query_lower}'")
+                    # If any keyword matches, add ALL images from that folder
+                    if any(keyword in query_lower for keyword in keywords):
+                        print(f"✅ Folder '{folder_name}' matched! Keywords: {[k for k in keywords if k in query_lower]}")
+                        print(f"📸 Adding ALL images from {folder_name} folder...")
+                        
+                        for image_file in os.listdir(folder_path):
+                            if image_file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+                                relevant_images.append({
+                                    'filename': image_file,
+                                    'path': f'/images/{folder_name}/{image_file}',
+                                    'category': folder_name
+                                })
+                                print(f"   📸 Added: {folder_name}/{image_file}")
+                    else:
+                        print(f"❌ Folder '{folder_name}' - no keyword match")
+                        print(f"   Keywords: {keywords}")
+                        print(f"   Query: '{query_lower}'")
+                        print(f"   Matches found: {[k for k in keywords if k in query_lower]}")
+            
+            print(f"🎯 Total images found: {len(relevant_images)}")
+            if relevant_images:
+                print("📋 Images to show:")
+                for i, img in enumerate(relevant_images, 1):
+                    print(f"   {i}. {img['category']}/{img['filename']}")
+            else:
+                print("⚠️ No matching folders found!")
+                
+        except Exception as e:
+            print(f"⚠️ Error searching for images: {e}")
+            relevant_images = []
+        
+        # Generate D2 diagram and SVG
         steps_file_path = "steps.txt"
         with open(steps_file_path, "w", encoding="utf-8") as f:
             f.write(answer)
@@ -275,11 +493,17 @@ def ask_question():
         except subprocess.CalledProcessError as e:
             print(f"❌ Error rendering D2 diagram: {e}")
             svg_url = None
+    else:
+        print(f"❌ No good training data match (distance: {best_distance:.3f} > {DISTANCE_THRESHOLD}), skipping image search")
+        print("🔍 Answer generated by Gemini (no matching training data) - no images will be shown")
     response_data = {
         "answer": final_answer.replace("\n", "<br>")
     }
     if svg_url:
         response_data["svg"] = svg_url
+    if relevant_images:
+        response_data["relevant_images"] = relevant_images
+    
     return jsonify(response_data)
 
 # --- Run App ---
