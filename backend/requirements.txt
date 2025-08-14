@@ -3,3 +3,4 @@ faiss-cpu
 numpy
 google-generativeai
 python-dotenv
+pyinstaller
