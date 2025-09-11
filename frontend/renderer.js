@@ -3,7 +3,6 @@ const questionInput = document.getElementById("question");
 const sendBtn = document.getElementById("send-btn");
 const micBtn = document.getElementById("mic-btn");
 
-
 // Function to download images
 async function downloadImage(imageUrl, filename) {
   try {
@@ -167,10 +166,15 @@ async function send() {
   chat.scrollTop = chat.scrollHeight;
 }
 
-document.querySelector(".close-btn").addEventListener("click", () => {
-  const window = remote.getCurrentWindow();
-  window.close();
-});
+// Header buttons: back to landing and window close
+const backBtn = document.getElementById("back-btn");
+if (backBtn) {
+  backBtn.addEventListener("click", () => {
+    window.location.href = "landing.html";
+  });
+}
+
+document.querySelector(".close-btn[onclick]");
 
 sendBtn.addEventListener("click", send);
 questionInput.addEventListener("keydown", (e) => {

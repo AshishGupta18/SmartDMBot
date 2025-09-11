@@ -1,6 +1,6 @@
-const { app, BrowserWindow, screen } = require('electron');
-const path = require('path');
-const { spawn } = require('child_process');
+const { app, BrowserWindow, screen } = require("electron");
+const path = require("path");
+const { spawn } = require("child_process");
 
 let backendProcess = null;
 
@@ -22,35 +22,35 @@ function createWindow() {
     frame: false,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
-    }
+      contextIsolation: false,
+    },
   });
 
-  win.loadFile('index.html');
+  win.loadFile("landing.html");
 }
 
 app.whenReady().then(() => {
   // Backend EXE location (inside packaged app)
-  const exePath = path.join(__dirname, 'backend-bin', 'MyBackendApp.exe');
+  const exePath = path.join(__dirname, "backend-bin", "MyBackendApp.exe");
 
   backendProcess = spawn(exePath, [], { shell: true });
 
-  backendProcess.stdout.on('data', (data) => {
+  backendProcess.stdout.on("data", (data) => {
     console.log(`[Backend]: ${data}`);
   });
 
-  backendProcess.stderr.on('data', (data) => {
+  backendProcess.stderr.on("data", (data) => {
     console.error(`[Backend ERROR]: ${data}`);
   });
 
-  backendProcess.on('close', (code) => {
+  backendProcess.on("close", (code) => {
     console.log(`Backend process closed with code ${code}`);
   });
 
   createWindow();
 });
 
-app.on('window-all-closed', () => {
+app.on("window-all-closed", () => {
   if (backendProcess) backendProcess.kill();
   app.quit();
 });

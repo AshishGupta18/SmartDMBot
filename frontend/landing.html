@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Bots</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="widget">
+      <header class="chat-header">
+        <div class="chat-title">
+          <img
+            src="./assets/sdmbot.png"
+            alt="SmartShift Bots"
+            class="logo-image"
+          />
+        </div>
+        <button class="close-btn" onclick="window.close()">✕</button>
+      </header>
+      <main
+        class="chat-box"
+        style="justify-content: center; align-items: center"
+      >
+        <div
+          style="
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 320px;
+          "
+        >
+          <button class="primary-btn" id="btn-dmbot">Open DM Bot</button>
+          <button class="primary-btn" id="btn-bot2">Open Bot 2</button>
+          <button class="primary-btn" id="btn-bot3">Open Bot 3</button>
+        </div>
+      </main>
+      <div class="input-area" style="display: none"></div>
+    </div>
+
+    <script src="landing.js"></script>
+  </body>
+</html>
