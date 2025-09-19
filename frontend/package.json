@@ -20,7 +20,7 @@
   },
   "build": {
     "appId": "com.smartdmbot.app",
-    "productName": "SmartDMBot",
+    "productName": "SmartDmBot",
     "files": [
       "**/*",
       "backend-bin/MyBackendApp.exe"
@@ -39,7 +39,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "assets/appicon.ico"

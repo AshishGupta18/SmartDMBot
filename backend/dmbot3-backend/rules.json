@@ -1,0 +1,511 @@
+{
+  "objects": {
+    "SFPF": {
+      "NEW": [
+        "1. Import the new SFPF object using a Transport of Copies (TOC).",
+        "2. Verify the import was successful in the target system.",
+        "3. Perform basic activation and testing of the form.",
+        "4. Ensure all related objects like interfaces (SFPI) are also transported.",
+        "5. Document the transport in the project tracking system.<br><img src='../frontend/photo/ddls_already.png' alt='Diagram' style='max-width: 100%; border-radius: 12px; margin-top: 10px;' class='clickable-image'>"
+      ],
+      "ALREADY_EXISTING": [
+        "1. Use T-code SE03 to find all transport requests for the SFPF object in both source and target systems.",
+        "2. Compare the transport history to identify a common baseline and any target-specific changes.",
+        "3. If no target-specific changes exist, it's safe to import the source version via TOC.",
+        "4. If target changes exist, manually apply the source changes to the target system, preserving the target's modifications.",
+        "5. After the manual merge, activate and test the form thoroughly.<br><img src='../frontend/photo/ddls_already.png' alt='Diagram' style='max-width: 100%; border-radius: 12px; margin-top: 10px;' class='clickable-image'>"
+      ],
+      "DELETION": [
+        "1. Confirm the deletion request with the business or functional team.",
+        "2. Identify any dependencies on the SFPF object before proceeding.",
+        "3. If approved and no dependencies exist, delete the object in the development environment.",
+        "4. Capture the deletion in a transport request.",
+        "5. Document the deletion and the corresponding transport request.<br><img src='../frontend/photo/ddls_already.png' alt='Diagram' style='max-width: 100%; border-radius: 12px; margin-top: 10px;' class='clickable-image'>"
+      ]
+    },
+    "SFPI": {
+      "NEW": [
+        "1. Import the new SFPI object using a Transport of Copies (TOC).",
+        "2. Check the interface in the target system to ensure it was imported correctly.",
+        "3. Activate the interface.",
+        "4. Verify that any forms (SFPF) using this interface are updated and working.",
+        "5. Document the import and activation."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Use T-code SE03 to analyze the transport history for the SFPI object.",
+        "2. Identify a common baseline transport between the source and target systems.",
+        "3. If the target system has custom changes, do not overwrite them.",
+        "4. Manually bring the necessary source changes into the target system.",
+        "5. Activate the interface and test any dependent forms."
+      ],
+      "DELETION": [
+        "1. Get explicit confirmation from the customer or project lead before deletion.",
+        "2. Check for any forms (SFPF) or programs that use this interface.",
+        "3. If no dependencies exist, delete the interface.",
+        "4. Record the deletion in a transport request.",
+        "5. Update documentation to reflect the removal of the interface."
+      ]
+    },
+    "TABL": {
+      "NEW": [
+        "0.",
+        "1. For IDOC Segments (check in WE31), create them manually in the target system using a screen-by-screen comparison; do not import.",
+        "2. For regular tables, import them via TOC.",
+        "3. After importing, verify the table structure and settings in the target system using T-code SE11.",
+        "4. Activate the table in the target system.<a href='https://drive.google.com/file/d/1xYXvjTt_3ZqGOSl-tg8GsBkIwm8LTR6Z/view?usp=sharing'target = '_blank''>Refer Documentation</a>",
+        "5. Perform a consistency check and ensure dependent objects are handled.<br><img src='../frontend/photo/ddls_already.png' alt='Diagram' style='max-width: 100%; border-radius: 12px; margin-top: 10px;' class='clickable-image'>"
+      ],
+      "ALREADY_EXISTING": [
+        "1. Use the RSSYSCOMP utility to perform a version comparison between the source and target systems.",
+        "2. If differences are found, analyze them to determine if they are source changes or target-specific modifications.",
+        "3. For source changes, apply them manually to the target table.",
+        "4. Be cautious not to overwrite any valid target-specific enhancements.",
+        "5. Activate the table and run a syntax check on dependent programs.<br><img src='../frontend/photo/ddls_already.png' alt='Diagram' style='max-width: 100%; border-radius: 12px; margin-top: 10px;' class='clickable-image'>"
+      ],
+      "DELETION": [
+        "1. If the table exists in the target but not the source, flag it as a 'Customer Action' for review.",
+        "2. Do not delete objects from the target system without explicit customer confirmation.",
+        "3. If deletion is confirmed, ensure there are no dependent objects like views or programs.",
+        "4. Capture the deletion in a transport request.",
+        "5. Document the reason for deletion and the transport details.<br><img src='../frontend/photo/ddls_already.png' alt='Diagram' style='max-width: 100%; border-radius: 12px; margin-top: 10px;' class='clickable-image'>"
+      ]
+    },
+    "PDWS": {
+      "NEW": [
+        "1. Import the new workflow template via TOC.",
+        "2. Check the workflow definition in the target system using T-code SWDD.",
+        "3. Activate the new workflow template.",
+        "4. Perform basic unit testing to ensure the workflow triggers correctly.",
+        "5. Document the new workflow and its purpose."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Use T-code SE03 to check for transport requests and potential conflicts.",
+        "2. If conflicts are identified, a deeper analysis of the Business Object (BO) layer may be required.",
+        "3. Manually compare the workflow definitions between the source and target systems.",
+        "4. Apply necessary changes from the source to the target, preserving target-specific logic.",
+        "5. Thoroughly test the modified workflow, including all branches and outcomes."
+      ],
+      "DELETION": [
+        "1. Obtain formal sign-off from the business process owner before deleting a workflow.",
+        "2. Ensure there are no active, in-flight instances of the workflow.",
+        "3. Check for any event linkages or configurations that trigger this workflow.",
+        "4. Delete the workflow template and capture it in a transport.",
+        "5. Update any process documentation that refers to the deleted workflow."
+      ]
+    },
+    "PDTS": {
+      "NEW": [
+        "1. Import the new standard task via TOC.",
+        "2. Verify the task in the target system using T-code PFTC.",
+        "3. Ensure the task properties, including the agent assignment, are correct.",
+        "4. Activate the task.",
+        "5. Integrate the task into the relevant workflow templates and test."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Use T-code SE03 to find all transports related to the standard task.",
+        "2. Compare the versions to identify any conflicts or target-specific changes.",
+        "3. Manually adjust the task in the target system to incorporate the source changes.",
+        "4. Pay close attention to agent assignment rules and bindings.",
+        "5. Test the task within the context of its parent workflow."
+      ],
+      "DELETION": [
+        "1. Confirm with the workflow administrator and business owner before deletion.",
+        "2. Check all workflow templates (PDWS) to see if they use this task.",
+        "3. If the task is not used, proceed with the deletion.",
+        "4. Capture the deletion in a transport request.",
+        "5. Document the removal of the task."
+      ]
+    },
+    "DDLS": {
+      "NEW": [
+        "1. Import the new CDS View definition via TOC.",
+        "2. Open the CDS View in Eclipse in the target system to verify it was imported correctly.",
+        "3. Activate the CDS View.",
+        "4. Check for any activation errors and resolve them.",
+        "5. Test data retrieval from the new CDS View.<br><img src='../frontend/photo/ddls_already.png' alt='Diagram' style='max-width: 100%; border-radius: 12px; margin-top: 10px;' class='clickable-image'>"
+      ],
+              "ALREADY_EXISTING": [
+          "1. Open the CDS View in Eclipse for both the source and target systems.",
+          "2. Use a comparison tool like MELD to compare the source code.",
+          "3. Manually merge the required changes from the source into the target's CDS View definition.",
+          "4. Be careful to preserve any intentional differences in the target system.",
+          "5. Activate the modified CDS View and perform regression testing.<br><img src='../frontend/photo/ddls_already.png' alt='Diagram' style='max-width: 100%; border-radius: 12px; margin-top: 10px;' class='clickable-image'>"
+        ],
+              "DELETION": [
+          "1. If the CDS View exists in the target but not the source, mark it as a 'Customer Action' for investigation.",
+          "2. Confirm that no other objects (e.g., other CDS Views, Fiori apps) depend on this view.",
+          "3. Once confirmed, delete the DDLS object.",
+          "4. Capture the deletion in a transport request.",
+          "5. Update any relevant technical documentation.<br><img src='../frontend/photo/ddls_already.png' alt='Diagram' style='max-width: 100%; border-radius: 12px; margin-top: 10px;' class='clickable-image'>"
+        ]
+    },
+    "IWPR": {
+      "NEW": [
+        "1. Mark the new IWPR project for inclusion in a Transport of Copies (TOC).",
+        "2. After import, go to T-code SEGW in the target system to verify the project exists.",
+        "3. Generate the runtime artifacts (MPC, DPC, IWSV, IWSG).",
+        "4. Register and activate the new OData service in /IWFND/MAINT_SERVICE.",
+        "5. Perform a test call to the service to ensure it's working."
+      ],
+      "ALREADY_EXISTING": [
+        "1. In SEGW, compare the Data Model components (Entity Types, Properties, etc.) between source and target.",
+        "2. Use a text comparison tool like MELD to check for differences in the MPC_EXT and DPC_EXT classes.",
+        "3. Manually update the target project with the changes from the source.",
+        "4. Regenerate the runtime objects for the project.",
+        "5. Clear caches and re-test the OData service."
+      ],
+      "DELETION": [
+        "1. Deregister the service in /n/IWFND/MAINT_SERVICE.",
+        "2. Delete the model registration from the backend.",
+        "3. Delete the associated runtime objects (IWSG, IWSV, IWOM, IWMO).",
+        "4. Remove any links to MPC_EXT/DPC_EXT classes.",
+        "5. Finally, delete the IWPR project itself in SEGW."
+      ]
+    },
+    "MSAG": {
+      "NEW": [
+        "1. Import the new message class via TOC.",
+        "2. Go to T-code SE91 in the target system to verify the message class and its messages.",
+        "3. Ensure the messages have the correct text and settings (e.g., self-explanatory).",
+        "4. Activate the message class.",
+        "5. Update any programs that use the new messages and test."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Use T-code SE03 to check the transport history and determine if it's safe to import.",
+        "2. If a manual merge is required, copy all messages from both source and target into a comparison tool like MELD.",
+        "3. Compare the messages line by line and manually update the target message class.",
+        "4. Pay attention to message numbers, texts, and long texts.",
+        "5. After the merge, test the application logic that triggers these messages."
+      ],
+      "DELETION": [
+        "1. If the message class is in the target but not the source, mark it as a 'Customer Action' for review.",
+        "2. Before deleting, perform a 'where-used' check to find any programs that reference this message class.",
+        "3. If it is not used, proceed with the deletion.",
+        "4. Capture the deletion in a transport request.",
+        "5. Remove the message calls from any related code."
+      ]
+    },
+    "TRAN": {
+      "NEW": [
+        "1. Import the new transaction code via TOC.",
+        "2. Go to T-code SE93 in the target system to verify the transaction.",
+        "3. Check all properties, including the program it calls and the selection screen variant.",
+        "4. Test the transaction to ensure it executes correctly.",
+        "5. Assign the new transaction to the appropriate roles if necessary."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Manually compare the transaction screens in SE93 between the source and target systems.",
+        "2. Check the associated program or view name in SE11/SE38 to ensure it's also in scope.",
+        "3. Use SE03 or version management for a deeper analysis of changes.",
+        "4. Apply the necessary modifications to the transaction in the target system.",
+        "5. Retest the transaction after making changes."
+      ],
+      "DELETION": [
+        "1. If the transaction exists in the target but not the source, flag it as a 'Customer Action' to confirm its purpose.",
+        "2. Check user roles and authorizations to see who has access to this transaction.",
+        "3. If confirmed for deletion, remove the transaction using SE93.",
+        "4. Capture the deletion in a transport.",
+        "5. Update user training materials and role definitions."
+      ]
+    },
+    "DEVC": {
+      "NEW": [
+        "1. Import the new package (formerly development class) via TOC.",
+        "2. Verify the package's existence and properties in T-code SE80 or SE21.",
+        "3. Ensure the transport layer and application component are set correctly.",
+        "4. Assign the package to the correct super-package if applicable.",
+        "5. Start assigning new development objects to this package."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Open the package in T-code SE80 and compare the properties between source and target.",
+        "2. You can typically update the short description or the super-package.",
+        "3. Be cautious when changing the transport layer, as it can affect how changes are recorded.",
+        "4. Manually apply the required changes to the package definition.",
+        "5. Ensure consistency across your development landscape."
+      ],
+      "DELETION": [
+        "1. If the package is in the target but not the source, it's a 'Customer Action' to determine if it's still needed.",
+        "2. Before deleting a package, ensure it is completely empty of all objects.",
+        "3. You may need to reassign objects to a different package before you can delete the old one.",
+        "4. Once empty, delete the package using SE80.",
+        "5. This action is typically captured in a transport request."
+      ]
+    },
+    "INTF": {
+      "NEW": [
+        "1. Import the new interface via TOC.",
+        "2. Go to T-code SE24 in the target system and verify the interface.",
+        "3. Perform a syntax check on the new interface.",
+        "4. Activate the interface.",
+        "5. Implement the interface in the relevant classes and test the methods."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Perform a manual retrofit; do not assume it's safe to import.",
+        "2. Use a comparison tool like MELD to compare the interface sections (methods, attributes) between source and target.",
+        "3. If a customer-specific transport exists for the object in the target, a manual merge is mandatory.",
+        "4. Carefully add the new methods or attributes from the source to the target interface.",
+        "5. Activate the interface and perform a syntax check on all implementing classes."
+      ],
+      "DELETION": [
+        "1. If the interface exists in the target but not the source, mark it as a 'Customer Action' for review.",
+        "2. Perform a 'where-used' check to find all classes that implement this interface.",
+        "3. You must remove the interface from all implementing classes before you can delete it.",
+        "4. Once it's no longer implemented, delete the interface in SE24.",
+        "5. Capture the deletion in a transport."
+      ]
+    },
+    "CLAS": {
+      "NEW": [
+        "1. Import the new class via TOC.",
+        "2. Verify the class, its methods, and attributes in T-code SE24.",
+        "3. Activate the entire class.",
+        "4. Run any associated unit tests to ensure basic functionality.",
+        "5. Document the purpose and usage of the new class."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Perform a three-way comparison using 'Source Parsed', 'Merged', and 'Target' files with a tool like MELD.",
+        "2. If there are custom changes on the target side, it requires a careful manual merge; flag as 'Customer Action' if complex.",
+        "3. Do not manually retrofit generated classes like MPC/DPC; these should be handled by regenerating the parent object (e.g., IWPR).",
+        "4. Apply the merged code to the target system.",
+        "5. Activate the class and run regression tests."
+      ],
+      "DELETION": [
+        "1. If the class is in the target but not the source, flag as 'Customer Action' for review.",
+        "2. Perform a 'where-used' check to ensure no other programs or objects are using this class.",
+        "3. If it's safe to delete, remove the class using SE24.",
+        "4. Capture the deletion in a transport request.",
+        "5. Update any technical designs that referenced the deleted class."
+      ]
+    },
+    "PROG": {
+      "NEW": [
+        "1. Import the new program via TOC.",
+        "2. Check the program's source code and text elements in T-code SE38.",
+        "3. Activate the program.",
+        "4. Create any necessary transaction codes or variants for the program.",
+        "5. Perform unit testing with various inputs."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Use a three-way comparison tool (like MELD) with 'Source Parsed', 'Merged', and 'Target' files.",
+        "2. If the target system has significant custom changes, a manual merge is required.",
+        "3. Carefully merge the source logic into the target program, respecting the target's unique functionality.",
+        "4. Pay close attention to selection screens, text elements, and subroutines.",
+        "5. After merging, activate the program and conduct thorough regression testing."
+      ],
+      "DELETION": [
+        "1. If the program exists in the target but not the source, it's a 'Customer Action' to validate its purpose.",
+        "2. Check for any transaction codes (SE93) or batch jobs (SM37) that execute this program.",
+        "3. If it's obsolete, delete the program using SE38.",
+        "4. Capture the deletion in a transport.",
+        "5. Remove any associated variants, transactions, and job schedules."
+      ]
+    },
+    "FUGR": {
+      "NEW": [
+        "1. Import the new function group via TOC.",
+        "2. Go to T-code SE37, navigate to 'Utilities' -> 'Repair function group'.",
+        "3. Click the 'Repair' button in the pop-up to ensure consistency.",
+        "4. Activate the entire function group, including all function modules and includes.",
+        "5. Test the function modules within the group."
+      ],
+      "ALREADY_EXISTING": [
+        "1. If it's a Table Maintenance Generator (TMG) related function group, regenerate the TMG for the corresponding table/view.",
+        "2. For normal custom function groups, perform a three-way comparison in MELD for all its components (function modules, includes).",
+        "3. Add the final merged code to the respective objects in the target system.",
+        "4. Activate the entire function group.",
+        "5. Test all affected functionalities."
+      ],
+      "DELETION": [
+        "1. If the function group is in the target but not the source, mark as 'Customer Action' for review.",
+        "2. Ensure all function modules within the group are not being called by other programs.",
+        "3. The function group must be empty before it can be deleted.",
+        "4. Once empty, delete the function group using T-code SE80.",
+        "5. Capture the deletion in a transport."
+      ]
+    },
+    "WDYC": {
+      "NEW": [
+        "1. Add both the Web Dynpro component (WDYC) and its views (WDYV) to your TOC transport.",
+        "2. Import the TOC into the target system.",
+        "3. Verify the component and its views in T-code SE80.",
+        "4. Activate the entire Web Dynpro component.",
+        "5. Test the application to ensure it renders and functions correctly."
+      ],
+      "ALREADY_EXISTING": [
+        "1. First, use T-code SE03 to check if it's safe to import.",
+        "2. If safe, import via TOC. If not, a manual retrofit is required.",
+        "3. If both the source and target systems have layout changes, this is a 'Customer Action' and requires business input.",
+        "4. For manual retrofits, compare component controllers, views, and windows between systems.",
+        "5. Apply changes carefully and re-test the application.<br><img src='./photo/wdyc_already1.png' alt='Diagram' style='max-width: 100%; border-radius: 12px; margin-top: 10px;' class='clickable-image'><br><img src='../photo/wdyc_already2.png' alt='Diagram' style='max-width: 100%; border-radius: 12px; margin-top: 10px;' class='clickable-image'>"
+      ],
+      "DELETION": [
+        "1. If the component is in the target but not the source, mark as 'Customer Action'.",
+        "2. Determine if the Web Dynpro application is still in use.",
+        "3. If obsolete, delete the component using SE80.",
+        "4. This action will also delete all associated views, windows, and controllers.",
+        "5. Capture the deletion in a transport."
+      ]
+    },
+    "SSFO": {
+      "NEW": [
+        "1. Import the new Smart Form via TOC.",
+        "2. Go to T-code SMARTFORMS and verify the form.",
+        "3. Activate the Smart Form, which generates a new function module.",
+        "4. Perform remediation checks for any syntax or S/4HANA compliance issues.",
+        "5. Test the form printing from the corresponding application."
+      ],
+      "ALREADY_EXISTING": [
+        "1. If a version comparison shows no conflicts, it is safe to import via TOC.",
+        "2. If conflicts exist, compare the generated function module's includes (F01, TOP) to identify code changes.",
+        "3. If the changes are simple (e.g., adding a field), fix them manually in the target form.",
+        "4. If the logic changes are complex, it should be treated as a 'Customer Action' for detailed analysis.",
+        "5. After any manual changes, activate and perform remediation and testing."
+      ],
+      "DELETION": [
+        "1. If the form is in the target but not the source, mark as 'Customer Action'.",
+        "2. Identify the print programs that call this Smart Form.",
+        "3. If the form is no longer used, delete it using T-code SMARTFORMS.",
+        "4. Capture the deletion in a transport.",
+        "5. Update the print programs to call a different form or handle the absence of the form."
+      ]
+    },
+    "FORM": {
+      "NEW": [
+        "1. Import the new SAPscript form via TOC.",
+        "2. Verify the form's layout and text elements in T-code SE71.",
+        "3. Perform remediation checks.",
+        "4. Activate the form.",
+        "5. Test the form printing process from the relevant business transaction."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Use SE03 to check transport history; if there are no target-specific changes, it is safe to import.",
+        "2. If there are conflicts (target-specific changes exist), this becomes a 'Customer Action'.",
+        "3. Due to the lack of a good version comparison tool for SAPscript, manual merging is high-risk.",
+        "4. The customer must decide whether to overwrite the target version or manually re-implement the source changes.",
+        "5. Any changes require thorough testing."
+      ],
+      "DELETION": [
+        "1. If the form exists in the target but not the source, it is a 'Customer Action'.",
+        "2. Find the print programs configured to use this form.",
+        "3. If it is confirmed to be obsolete, delete it using SE71.",
+        "4. Capture the deletion in a transport request.",
+        "5. Reconfigure the print programs to use a different form."
+      ]
+    },
+    "SSST": {
+      "NEW": [
+        "1. Import the new Smart Style via TOC.",
+        "2. Verify the style's paragraph and character formats in T-code SMARTSTYLES.",
+        "3. Perform remediation checks.",
+        "4. Activate the style.",
+        "5. Assign the style to the relevant Smart Forms and test the output."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Check the transport history in SE03. If no target-specific transports exist, it is safe to import.",
+        "2. If there are conflicts, this becomes a 'Customer Action'.",
+        "3. Similar to SAPscript, merging changes in Smart Styles is difficult and risky.",
+        "4. The customer needs to decide on the correct version to keep.",
+        "5. Test any Smart Forms that use this style after making a decision."
+      ],
+      "DELETION": [
+        "1. If the style is in the target but not the source, it is a 'Customer Action'.",
+        "2. Check which Smart Forms are using this style.",
+        "3. If no forms use the style, it can be deleted using T-code SMARTSTYLES.",
+        "4. Capture the deletion in a transport.",
+        "5. Ensure no forms are left without a valid style assigned."
+      ]
+    },
+    "IDOC": {
+      "NEW": [
+        "1. Create the new Basic Type manually in the target system using T-code WE30.",
+        "2. Do not import new IDOC types via TOC, as this can miss dependent table entries.",
+        "3. Perform a screen-by-screen comparison to ensure the segments and hierarchy match the source system.",
+        "4. Create any required new segments (TABL) manually in WE31 first.",
+        "5. Release the IDOC type and its segments in the target system."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Use T-code WE30 to compare the IDOC structure between source and target.",
+        "2. If new segments have been added in the source, add them to the target IDOC type.",
+        "3. If a segment's release status has changed, update it in the target (may require debug authorization).",
+        "4. Be cautious not to change segments that have target-specific modifications.",
+        "5. After changes, test the IDOC processing flow end-to-end."
+      ],
+      "DELETION": [
+        "1. Deleting standard IDOC types is not recommended.",
+        "2. For custom IDOC types, confirm with the integration team that they are no longer in use.",
+        "3. Check partner profiles (WE20) to ensure no partners are configured to use this IDOC type.",
+        "4. If confirmed, delete the IDOC type using WE30.",
+        "5. This action should be carefully documented and transported."
+      ]
+    },
+    "SHLP": {
+      "NEW": [
+        "1. Import the new Search Help via TOC.",
+        "2. Verify the search help's definition and parameters in T-code SE11.",
+        "3. Activate the search help.",
+        "4. Test the search help by attaching it to a data element or screen field.",
+        "5. Ensure it returns the expected values."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Use the RSSYSCOMP utility to check for differences between source and target.",
+        "2. If not identical, perform a version comparison in SE11.",
+        "3. Manually apply the source changes (e.g., adding new parameters, changing the selection method) to the target.",
+        "4. Retain any valid target-specific changes.",
+        "5. Activate and re-test the search help."
+      ],
+      "DELETION": [
+        "1. Confirm with the functional team that the search help is no longer needed.",
+        "2. Perform a 'where-used' check to find all data elements or screens that reference it.",
+        "3. Remove the search help from all dependent objects.",
+        "4. Once it is no longer used, delete the search help in SE11.",
+        "5. Capture the deletion in a transport."
+      ]
+    },
+    "ENQU": {
+      "NEW": [
+        "1. Import the new Lock Object via TOC.",
+        "2. Verify the lock object's definition, tables, and lock parameters in T-code SE11.",
+        "3. Activate the lock object, which generates ENQUEUE and DEQUEUE function modules.",
+        "4. Implement calls to these function modules in the relevant programs.",
+        "5. Test the locking mechanism to prevent concurrent data access."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Use the RSSYSCOMP utility for an initial comparison.",
+        "2. If differences exist, perform a detailed version comparison in SE11.",
+        "3. Manually update the lock object in the target system with the source changes.",
+        "4. Activate the lock object to regenerate the function modules.",
+        "5. Perform a syntax check on programs that call the ENQUEUE/DEQUEUE modules."
+      ],
+      "DELETION": [
+        "1. This is a high-risk activity; confirm that the locking logic is no longer required.",
+        "2. Perform a 'where-used' check for the ENQUEUE and DEQUEUE function modules.",
+        "3. Remove all calls to these function modules from your custom code.",
+        "4. Once no longer used, delete the lock object in SE11.",
+        "5. This will also delete the associated function modules."
+      ]
+    },
+    "TOBJ": {
+      "NEW": [
+        "1. New TOBJ entries can be considered for inclusion in a safe-to-import TOC.",
+        "2. Verify the object definition in the target system using T-code SOBJ after import.",
+        "3. Ensure all attributes like category, transport settings, and client-specificity are correct.",
+        "4. Check for consistency with its underlying dictionary object (e.g., table or view).",
+        "5. Document the new entry."
+      ],
+      "ALREADY_EXISTING": [
+        "1. Use T-code SE03 to analyze the transport history for the TOBJ entry.",
+        "2. If the target has customer-specific transports, a manual comparison in SOBJ is needed.",
+        "3. Compare all attributes screen-by-screen between source and target.",
+        "4. If a manual merge is required, make the changes directly in the target system.",
+        "5. Ensure the changes do not negatively impact table maintenance or transport behavior."
+      ],
+      "DELETION": [
+        "1. Confirm with the development lead that the object definition is obsolete.",
+        "2. Deleting a TOBJ entry can affect how the underlying table/view is maintained and transported.",
+        "3. If confirmed, delete the entry from the SOBJ list.",
+        "4. Capture the deletion in a transport request.",
+        "5. Ensure developers are aware that the object's behavior may have changed."
+      ]
+    }
+  }
+}

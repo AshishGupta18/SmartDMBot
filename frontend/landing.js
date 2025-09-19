@@ -10,5 +10,5 @@ document.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", () => go("dmbot2/index.html"));
   document
     .getElementById("btn-bot3")
-    .addEventListener("click", () => go("bot3.html"));
+    .addEventListener("click", () => go("dmbot3/index.html"));
 });

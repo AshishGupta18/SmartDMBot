@@ -2,6 +2,9 @@ const { app, BrowserWindow, screen } = require("electron");
 const path = require("path");
 const { spawn } = require("child_process");
 
+// Set app name
+app.setName("SmartDmBot");
+
 let backendProcess = null;
 
 function createWindow() {
@@ -20,6 +23,8 @@ function createWindow() {
     minimizable: true,
     maximizable: true,
     frame: false,
+    title: "SmartDmBot",
+    icon: path.join(__dirname, "assets", "appicon.ico"),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,

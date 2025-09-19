@@ -1,6 +1,13 @@
+#for dmbot1
 Flask
 faiss-cpu
 numpy
 google-generativeai
 python-dotenv
 pyinstaller
+
+#for dmbot3
+scikit-learn
+joblib
+Flask-Cors
+gunicorn

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>smartDM Bot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background: #1a202c; /* Dark Navy Base */
+        color: #e2e8f0;
+      }
+      .chat-container {
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        background: #2d3748; /* Lighter Navy */
+      }
+      .chat-header {
+        background: linear-gradient(135deg, #2d3748 0%, #4c51bf 100%);
+        color: white;
+        border-bottom: 1px solid #4a5568;
+      }
+      .chat-log {
+        background-color: #171923; /* Darkest Background */
+        padding: 1.5rem;
+      }
+      .chat-message {
+        display: flex;
+        margin-bottom: 1.25rem; /* Increased margin */
+        align-items: flex-end;
+        animation: fadeIn 0.5s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .chat-message.user {
+        justify-content: flex-end;
+      }
+      .chat-bubble {
+        max-width: 75%;
+        padding: 0.8rem 1.2rem; /* Increased padding */
+        border-radius: 1.5rem; /* More rounded */
+        word-wrap: break-word;
+        line-height: 1.6;
+        font-size: 1rem; /* Increased font size */
+      }
+      .chat-bubble-user {
+        background: #4299e1; /* Vibrant Blue for User */
+        color: white;
+        border-bottom-right-radius: 0.25rem;
+      }
+      .chat-bubble-bot {
+        background: #4a5568; /* Medium-dark Gray for Bot */
+        color: #e2e8f0;
+        border-bottom-left-radius: 0.25rem;
+      }
+      .avatar {
+        width: 48px; /* Larger avatar */
+        height: 48px; /* Larger avatar */
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        overflow: hidden;
+      }
+      .avatar-bot {
+        background-color: #4a5568;
+        margin-right: 1rem;
+      }
+      .avatar-user {
+        background-color: #4c51bf; /* Dark Indigo for User */
+        margin-left: 1rem;
+        border-radius: 50%;
+      }
+      .chat-input-area {
+        border-top: 1px solid #4a5568;
+        padding: 1.25rem; /* More padding */
+        background: #2d3748;
+      }
+      #user-input {
+        background-color: #1a202c;
+        border: 1px solid #4a5568;
+        color: #e2e8f0;
+        transition: all 0.3s ease;
+        font-size: 1rem; /* Larger input text */
+        padding: 0.9rem 1.25rem; /* Increased padding */
+      }
+      #user-input:focus {
+        border-color: #4299e1;
+        box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
+      }
+      #send-btn {
+        background: #4299e1;
+        transition: background-color 0.3s ease;
+        width: 56px; /* Larger button */
+        height: 56px; /* Larger button */
+      }
+      #send-btn:hover {
+        background: #3182ce;
+      }
+      .flowchart-panel {
+        background-color: #171923;
+      }
+      .flowchart-header {
+        color: #e2e8f0;
+      }
+      #flowchart-container {
+        background: #2d3748;
+        border: 1px dashed #4a5568;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden; /* Changed from auto to hidden */
+      }
+      #flowchart-container .mermaid {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #flowchart-container .mermaid svg {
+        max-width: 100%;
+        max-height: 100%;
+        height: auto;
+      }
+      .spinner {
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border-left-color: #ffffff;
+        animation: spin 1s ease infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .loading-bubble {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem;
+      }
+      #disclaimer {
+        text-align: center;
+        font-size: 0.75rem;
+        color: #718096; /* Muted gray color */
+        padding-top: 0.5rem;
+      }
+      .clickable-image {
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      .clickable-image:hover {
+        transform: scale(1.05);
+      }
+    </style>
+  </head>
+  <body class="flex flex-col items-center justify-center h-screen p-4">
+    <div
+      class="w-full max-w-6xl h-full md:h-[95vh] md:max-h-[900px] chat-container rounded-xl flex flex-col md:flex-row overflow-hidden"
+    >
+      <!-- Chat Panel -->
+      <div class="w-full md:w-1/2 flex flex-col">
+        <header class="chat-header p-5 flex items-center shadow-md z-10">
+          <button
+            id="back-btn"
+            class="mr-4 text-white text-2xl hover:text-indigo-200"
+            title="Back"
+          >
+            ←
+          </button>
+          <div class="avatar avatar-bot">
+            <img
+              src="https://media.glassdoor.com/sqll/750076/smartshift-technologies-squarelogo-1431936182506.png"
+              alt="Bot Icon"
+              class="w-full h-full object-contain bg-white p-1 rounded-md"
+            />
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold">smartDM Bot</h1>
+            <p class="text-sm text-indigo-300">Your AI Retrofit Assistant</p>
+          </div>
+        </header>
+
+        <div id="chat-log" class="chat-log flex-1 space-y-4 overflow-y-auto">
+          <!-- Chat messages will be appended here -->
+        </div>
+
+        <div class="chat-input-area flex items-center">
+          <input
+            type="text"
+            id="user-input"
+            class="flex-1 rounded-full focus:outline-none"
+            placeholder="Type 'hi' to begin..."
+          />
+          <button
+            id="send-btn"
+            class="text-white rounded-full ml-4 flex items-center justify-center focus:outline-none"
+          >
+            <i class="fas fa-paper-plane text-xl"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Flowchart Panel -->
+      <div
+        class="w-full md:w-1/2 flex flex-col p-5 flowchart-panel border-l border-gray-700"
+      >
+        <header class="pb-4 border-b border-gray-700 mb-4">
+          <h2 class="text-2xl font-bold flowchart-header">
+            Decision Flowchart
+          </h2>
+          <p class="text-sm text-gray-400">
+            Visualizing the process step-by-step.
+          </p>
+        </header>
+        <div id="flowchart-container" class="flex-1 rounded-lg p-4">
+          <p class="text-gray-500 text-center">
+            Your process flowchart will appear here.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div id="disclaimer">
+      This response is generated by AI. Please use your discretion before using
+      it.
+    </div>
+
+    <!-- Image Modal -->
+    <div
+      id="image-modal"
+      class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-50 p-4"
+    >
+      <span
+        id="close-modal"
+        class="absolute top-4 right-6 text-white text-5xl font-bold cursor-pointer hover:text-gray-400 transition-colors"
+        >&times;</span
+      >
+      <img
+        id="modal-image"
+        src=""
+        alt="Enlarged View"
+        class="max-w-[95vw] max-h-[95vh] object-contain rounded-lg"
+      />
+    </div>
+
+    <!-- Mermaid.js for flowchart generation -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: "dark",
+        themeVariables: {
+          background: "#2d3748",
+          primaryColor: "#2d3748",
+          primaryTextColor: "#e2e8f0",
+          primaryBorderColor: "#4a5568",
+          lineColor: "#a78bfa",
+          textColor: "#e2e8f0",
+          fontSize: "16px",
+        },
+      });
+
+      const chatLog = document.getElementById("chat-log");
+      const userInput = document.getElementById("user-input");
+      const sendBtn = document.getElementById("send-btn");
+      const flowchartContainer = document.getElementById("flowchart-container");
+      const imageModal = document.getElementById("image-modal");
+      const modalImage = document.getElementById("modal-image");
+      const closeModalBtn = document.getElementById("close-modal");
+
+      let conversationState = "AWAITING_GREETING";
+      let userInputs = {};
+
+      // Backend API endpoint
+      const BACKEND_URL = "http://localhost:5000";
+
+      function addMessage(sender, message, isLoading = false) {
+        const messageWrapper = document.createElement("div");
+        messageWrapper.className = `chat-message ${sender}`;
+
+        const avatar = document.createElement("div");
+        avatar.className = `avatar ${
+          sender === "user" ? "avatar-user" : "avatar-bot"
+        }`;
+
+        if (sender === "bot") {
+          avatar.innerHTML = `<img src="https://media.glassdoor.com/sqll/750076/smartshift-technologies-squarelogo-1431936182506.png" alt="Bot Icon" class="w-full h-full object-contain bg-white p-1 rounded-md">`;
+        } else {
+          avatar.innerHTML = `<i class="fas fa-user"></i>`;
+        }
+
+        const bubble = document.createElement("div");
+        bubble.className = `chat-bubble ${
+          sender === "user" ? "chat-bubble-user" : "chat-bubble-bot"
+        }`;
+
+        if (isLoading) {
+          bubble.classList.add("loading-bubble");
+          bubble.innerHTML = '<div class="spinner"></div>';
+          messageWrapper.id = "loading-message";
+        } else {
+          // To render newlines correctly, we replace \n with <br>
+          bubble.innerHTML = message.replace(/\n/g, "<br>");
+        }
+
+        if (sender === "user") {
+          messageWrapper.appendChild(bubble);
+          messageWrapper.appendChild(avatar);
+        } else {
+          messageWrapper.appendChild(avatar);
+          messageWrapper.appendChild(bubble);
+        }
+
+        chatLog.appendChild(messageWrapper);
+        chatLog.scrollTop = chatLog.scrollHeight;
+      }
+
+      function removeLoadingBubble() {
+        const loadingMessage = document.getElementById("loading-message");
+        if (loadingMessage) loadingMessage.remove();
+      }
+
+      /**
+       * Makes API call to backend to get answer
+       */
+      async function getAnswerFromBackend(obj_type, status, is_segment = null) {
+        try {
+          const response = await fetch(`${BACKEND_URL}/get_answer`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              obj_type: obj_type,
+              status: status,
+              is_segment: is_segment,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Failed to get answer");
+          }
+
+          const data = await response.json();
+          return data.answer;
+        } catch (error) {
+          console.error("Error calling backend:", error);
+          throw error;
+        }
+      }
+
+      async function generateFlowchart(finalAnswer) {
+        // Parse the multi-line answer into individual steps
+        const steps = finalAnswer
+          .split("\n")
+          .map((line) =>
+            line
+              .replace(/<br>.*$/, "")
+              .replace(/^\d+\.\s*/, "")
+              .trim()
+          ) // Remove image tags and leading numbers
+          .filter((line) => line.length > 0); // Filter out any empty lines from parsing
+
+        if (steps.length === 0) {
+          flowchartContainer.innerHTML =
+            '<p class="text-gray-500 text-center">No process steps to visualize.</p>';
+          return;
+        }
+
+        let mermaidCode = "graph TD;\n";
+        // Define a start node
+        mermaidCode += `A[<i class='fa fa-play'></i> Start] --> B["${steps[0].replace(
+          /"/g,
+          "#quot;"
+        )}"];\n`;
+
+        // Create nodes for each step and link them sequentially
+        for (let i = 0; i < steps.length - 1; i++) {
+          const currentNodeId = String.fromCharCode(66 + i); // B, C, D...
+          const nextNodeId = String.fromCharCode(67 + i); // C, D, E...
+          const stepText = steps[i + 1].replace(/"/g, "#quot;");
+          mermaidCode += `${currentNodeId} --> ${nextNodeId}["${stepText}"];\n`;
+        }
+
+        // Define an end node
+        const lastNodeId = String.fromCharCode(66 + steps.length - 1);
+        mermaidCode += `${lastNodeId} --> Z[<i class='fa fa-flag-checkered'></i> End];\n`;
+
+        // Add styling for start and end nodes
+        mermaidCode +=
+          "style A fill:#059669,stroke:#065f46,stroke-width:2px,color:#fff\n";
+        mermaidCode +=
+          "style Z fill:#d97706,stroke:#9a3412,stroke-width:2px,color:#fff\n";
+
+        flowchartContainer.innerHTML = `<div class="mermaid">${mermaidCode}</div>`;
+        await mermaid.run({
+          nodes: flowchartContainer.querySelectorAll(".mermaid"),
+        });
+      }
+
+      function handleUserInput() {
+        const message = userInput.value.trim();
+        if (!message) return;
+
+        addMessage("user", message);
+        userInput.value = "";
+        userInput.disabled = true;
+        sendBtn.disabled = true;
+
+        setTimeout(() => processBotLogic(message.toUpperCase()), 500);
+      }
+
+      async function processBotLogic(message) {
+        addMessage("bot", "", true);
+
+        try {
+          switch (conversationState) {
+            case "AWAITING_GREETING":
+              if (message === "HI") {
+                startNewQuery();
+              } else {
+                // If user types something other than 'hi', just wait.
+                removeLoadingBubble();
+              }
+              break;
+
+            case "START":
+              userInputs = { obj_type: message };
+              // We make a call with a dummy status to validate the object type.
+              try {
+                await getAnswerFromBackend(userInputs.obj_type, "NEW");
+                removeLoadingBubble();
+                conversationState = "AWAITING_STATUS";
+                addMessage("bot", "Is it NEW, ALREADY_EXISTING, or DELETION?");
+                userInput.placeholder = "e.g., NEW";
+              } catch (error) {
+                removeLoadingBubble();
+                if (error.message === "object_not_found") {
+                  addMessage("bot", "Object not present.");
+                  setTimeout(startNewQuery, 1000);
+                } else {
+                  addMessage(
+                    "bot",
+                    "An unexpected error occurred. Please try again."
+                  );
+                  setTimeout(startNewQuery, 1000);
+                }
+              }
+              break;
+
+            case "AWAITING_STATUS":
+              userInputs.status = message;
+              if (
+                userInputs.obj_type === "TABL" &&
+                userInputs.status === "NEW"
+              ) {
+                conversationState = "AWAITING_SEGMENT";
+                removeLoadingBubble();
+                addMessage("bot", `Is this an IDOC Segment? (YES/NO)`);
+                userInput.placeholder = "YES or NO";
+              } else {
+                const finalAnswer = await getAnswerFromBackend(
+                  userInputs.obj_type,
+                  userInputs.status
+                );
+                removeLoadingBubble();
+                addMessage("bot", finalAnswer);
+                await generateFlowchart(finalAnswer);
+                promptToContinue();
+              }
+              break;
+
+            case "AWAITING_SEGMENT":
+              userInputs.is_segment = message;
+              const finalAnswer = await getAnswerFromBackend(
+                userInputs.obj_type,
+                userInputs.status,
+                userInputs.is_segment
+              );
+              removeLoadingBubble();
+              addMessage("bot", finalAnswer);
+              await generateFlowchart(finalAnswer);
+              promptToContinue();
+              break;
+
+            case "AWAITING_CONTINUE":
+              removeLoadingBubble();
+              if (message === "CONTINUE") {
+                startNewQuery();
+              } else if (message === "STOP") {
+                endChat();
+              }
+              break;
+          }
+        } catch (error) {
+          removeLoadingBubble();
+          if (error.message === "object_not_found") {
+            addMessage("bot", "Object not present.");
+            setTimeout(startNewQuery, 1000);
+          } else {
+            addMessage(
+              "bot",
+              "An unexpected error occurred. Please try again."
+            );
+            setTimeout(startNewQuery, 1000);
+          }
+        }
+
+        userInput.disabled = false;
+        sendBtn.disabled = false;
+        userInput.focus();
+      }
+
+      function promptToContinue() {
+        conversationState = "AWAITING_CONTINUE";
+        addMessage("bot", "Continue or Stop?");
+        userInput.placeholder = "Continue or Stop";
+      }
+
+      function startNewQuery() {
+        removeLoadingBubble();
+        addMessage(
+          "bot",
+          "Hello! I am the smartDM Bot. To begin, please tell me your object type."
+        );
+        conversationState = "START";
+        userInputs = {};
+        userInput.placeholder = "Type your object type...";
+        flowchartContainer.innerHTML =
+          '<p class="text-gray-500 text-center">Your process flowchart will appear here.</p>';
+      }
+
+      function endChat() {
+        addMessage("bot", "Goodbye!");
+        conversationState = "AWAITING_GREETING";
+        userInput.placeholder = "Type 'hi' to begin again";
+      }
+
+      function initChat() {
+        conversationState = "AWAITING_GREETING";
+        userInput.placeholder = "Type 'hi' to begin";
+        userInput.focus();
+      }
+
+      function closeModal() {
+        imageModal.classList.add("hidden");
+        imageModal.classList.remove("flex");
+        modalImage.src = ""; // Clear the src to prevent showing the old image briefly
+      }
+
+      // --- Event Listeners ---
+
+      sendBtn.addEventListener("click", handleUserInput);
+      userInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") handleUserInput();
+      });
+
+      chatLog.addEventListener("click", function (e) {
+        // Check if a clickable image was clicked
+        if (
+          e.target.tagName === "IMG" &&
+          e.target.classList.contains("clickable-image")
+        ) {
+          modalImage.src = e.target.src;
+          imageModal.classList.remove("hidden");
+          imageModal.classList.add("flex");
+        }
+      });
+
+      closeModalBtn.addEventListener("click", closeModal);
+
+      imageModal.addEventListener("click", function (e) {
+        // Close the modal if the user clicks on the background overlay
+        if (e.target.id === "image-modal") {
+          closeModal();
+        }
+      });
+
+      window.onload = initChat;
+
+      // Back button navigation to landing page
+      const backBtn = document.getElementById("back-btn");
+      if (backBtn) {
+        backBtn.addEventListener("click", () => {
+          window.location.href = "../landing.html";
+        });
+      }
+    </script>
+  </body>
+</html>
