@@ -3,24 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bot 2</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>Smart DMBot</title>
+    <link rel="stylesheet" href="../style.css" />
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   </head>
   <body>
     <div class="widget">
       <header class="chat-header">
         <div class="chat-title">
-          <img src="./assets/sdmbot.png" alt="Bot 2" class="logo-image" />
+          <button class="close-btn" id="back-btn" title="Back">←</button>
+          <img
+            src="../assets/sdmbot.png"
+            alt="SmartShift DMBot"
+            class="logo-image"
+          />
         </div>
-        <button class="close-btn" onclick="window.history.back()">←</button>
+        <button class="close-btn" onclick="window.close()">✕</button>
       </header>
       <main class="chat-box" id="chat">
-        <div class="placeholder-text">Welcome to Bot 2 (placeholder)</div>
+        <div class="placeholder-text" id="chat-placeholder">
+          Hi, How Can I Help you?
+        </div>
       </main>
       <div class="input-area">
         <input type="text" id="question" placeholder="Write a reply..." />
         <button id="send-btn">➤</button>
+        <!-- <button id="mic-btn">🎤</button> -->
       </div>
     </div>
 

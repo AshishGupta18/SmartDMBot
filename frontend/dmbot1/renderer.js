@@ -170,7 +170,7 @@ async function send() {
 const backBtn = document.getElementById("back-btn");
 if (backBtn) {
   backBtn.addEventListener("click", () => {
-    window.location.href = "landing.html";
+    window.location.href = "../landing.html";
   });
 }
 
